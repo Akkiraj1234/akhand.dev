@@ -1,0 +1,235 @@
+{
+  "site": {
+    "name": "Akki",
+    "fullName": "Akhand Raj",
+    "domain": "akhand.dev",
+    "url": "https://akhand.dev",
+    "title": "Software Developer",
+    "description": "Software developer focused on backend engineering, software architecture, and building modular systems and practical tools."
+  },
+
+  "hero": {
+    "eyebrow": "AKHAND RAJ / SOFTWARE DEVELOPER",
+    "title": "I build things that solve problems.",
+    "subtitle": "Backend systems, developer tools, and software architecture.",
+    "ctaLabel": "See what I'm building",
+    "ctaTarget": "#currently"
+  },
+
+  "currently": {
+    "label": "Currently building",
+    "project": "Shipyard",
+    "description": "An open-source project lifecycle companion for managing the information surrounding software projects, from planning and development to releases and changelogs.",
+    "status": "In development",
+    "focus": [
+      "Software architecture",
+      "Developer tooling",
+      "Modular systems"
+    ]
+  },
+
+  "about": {
+    "short": "I am Akhand Raj — Akki — a software developer focused on backend engineering, software architecture, and building modular systems.",
+    "full": "I enjoy understanding how systems work, solving architectural problems, and turning complex ideas into clean, maintainable software. My path into software started with hands-on technical work, followed by teaching programming, software development, and backend engineering. I learn primarily by building real software, experimenting with different approaches, and understanding the trade-offs behind technical decisions. Outside software, I enjoy sketching, archery, chess, and exploring ideas beyond my usual technical interests."
+  },
+
+  "projects": [
+    {
+      "name": "Shipyard",
+      "description": "An open-source project lifecycle companion for managing project metadata across planning, development, releases, and changelogs.",
+      "status": "In development",
+      "technologies": [
+        "Python",
+        "CLI",
+        "Software Architecture",
+        "System Design"
+      ],
+      "url": "https://github.com/Akkiraj1234/shipyard"
+    },
+    {
+      "name": "Testpy",
+      "description": "A unified terminal workspace for discovering, selecting, running, and monitoring tests across multiple languages and frameworks.",
+      "status": "In development",
+      "technologies": [
+        "Python",
+        "Testing",
+        "TUI",
+        "Developer Tooling"
+      ],
+      "url": "https://github.com/Akkiraj1234/Testpy"
+    },
+    {
+      "name": "akki-core-backend",
+      "description": "A modular backend for collecting, processing, caching, and serving data from multiple external services through a unified API.",
+      "status": "In development",
+      "technologies": [
+        "Python",
+        "Backend",
+        "SSE",
+        "Data Synchronization"
+      ],
+      "url": "https://github.com/Akkiraj1234/akki-core-backend"
+    },
+    {
+      "name": "Sanatan Video Gen 2",
+      "description": "A Python-based automated video generation system for creating customizable short-form content with dynamic text, subtitles, effects, transitions, and audio.",
+      "status": "Experiment",
+      "technologies": [
+        "Python",
+        "FFmpeg",
+        "Pillow",
+        "Automation"
+      ],
+      "url": "https://github.com/Akkiraj1234/sanatan-video-gen2"
+    },
+    {
+      "name": "PyStreamSaver",
+      "description": "A desktop application for downloading and managing online media streams.",
+      "status": "Project",
+      "technologies": [
+        "Python",
+        "Desktop",
+        "Media Processing"
+      ],
+      "url": "https://github.com/Akkiraj1234/PyStreamSaver"
+    },
+    {
+      "name": "BrainDump",
+      "description": "A structured developer learning repository containing programming concepts, tools, libraries, practical examples, and organized learning resources.",
+      "status": "Learning project",
+      "technologies": [
+        "Python",
+        "C++",
+        "Documentation",
+        "Learning"
+      ],
+      "url": "https://github.com/Akkiraj1234/brain_dump"
+    }
+  ],
+
+  "philosophy": [
+    {
+      "title": "Understand the system",
+      "description": "I like understanding what happens underneath abstractions instead of treating them as magic."
+    },
+    {
+      "title": "Keep clear boundaries",
+      "description": "Systems become easier to reason about when responsibilities, interfaces, and ownership are clearly separated."
+    },
+    {
+      "title": "Build for change",
+      "description": "I prefer modular designs that allow components to evolve without forcing unrelated parts of the system to change."
+    },
+    {
+      "title": "Solve real problems",
+      "description": "Most of my projects start with a practical problem and grow through experimentation and iteration."
+    }
+  ],
+
+  "currentlyInto": [
+    {
+      "label": "Currently building",
+      "value": "Shipyard / developer tooling"
+    },
+    {
+      "label": "Currently learning",
+      "value": "Backend engineering, networking and system design"
+    },
+    {
+      "label": "Currently exploring",
+      "value": "Modular architecture, testing tools and data synchronization"
+    },
+    {
+      "label": "Away from the keyboard",
+      "value": "Sketching, archery and chess"
+    }
+  ],
+
+  "blog": [
+    {
+      "title": "Why I keep building from the bottom up",
+      "date": "Coming soon",
+      "description": "Notes on fundamentals, abstractions, and understanding the machinery behind software.",
+      "tags": [
+        "Systems",
+        "Learning"
+      ]
+    },
+    {
+      "title": "Designing software with clear boundaries",
+      "date": "Coming soon",
+      "description": "Thoughts on modular architecture, responsibility boundaries, and keeping systems maintainable as they grow.",
+      "tags": [
+        "Architecture",
+        "Software Engineering"
+      ]
+    },
+    {
+      "title": "Building tools for developers",
+      "date": "Coming soon",
+      "description": "Lessons from building Shipyard, Testpy, and other tools around the software development workflow.",
+      "tags": [
+        "Tooling",
+        "Developer Experience"
+      ]
+    },
+    {
+      "title": "Thinking about data synchronization",
+      "date": "Coming soon",
+      "description": "Exploring incremental updates, versioned state, synchronization, and efficient data transfer.",
+      "tags": [
+        "Backend",
+        "Data",
+        "Systems"
+      ]
+    }
+  ],
+
+  "profiles": {
+    "github": {
+      "label": "GitHub",
+      "username": "Akkiraj1234",
+      "url": "https://github.com/Akkiraj1234",
+      "enabled": true
+    },
+    "leetcode": {
+      "label": "LeetCode",
+      "username": "akhand_raj",
+      "url": "https://leetcode.com/u/akhand_raj/",
+      "enabled": true
+    },
+    "roadmap": {
+      "label": "Roadmap.sh",
+      "username": "akhandraj",
+      "url": "https://roadmap.sh/u/akhandraj",
+      "enabled": true
+    }
+  },
+
+  "social": {
+    "email": "akhandraj402@gmail.com",
+    "x": "",
+    "linkedin": "https://www.linkedin.com/in/akhandrajdev/",
+    "reddit": "",
+    "discord": "",
+    "instagram": ""
+  },
+
+  "activity": {
+    "enabledSources": [
+      "github",
+      "leetcode"
+    ],
+    "githubTtlMs": 3600000,
+    "leetcodeTtlMs": 21600000,
+    "weeksToShow": 52,
+    "githubTokenStorageKey": "GITHUB_TOKEN",
+    "proxyUrl": ""
+  },
+
+  "askMe": {
+    "title": "Ask me something.",
+    "description": "Talk to me about software, backend systems, architecture, developer tools, projects, or how things work underneath the surface.",
+    "unavailableLabel": "Contact details are being set up. Check back soon."
+  }
+}
