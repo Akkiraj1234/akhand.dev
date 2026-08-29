@@ -118,6 +118,14 @@ main > .section,
     color: #b9e958;
 }
 
+/* logo sizing */
+.site-logo {
+    width: 40px;
+    height: 40px;
+    display: block;
+    object-fit: contain;
+}
+
 
 .site-header nav {
     display: flex;
@@ -152,6 +160,11 @@ summary:hover {
     background: transparent;
     color: var(--ink);
     cursor: pointer;
+}
+
+.theme-toggle svg {
+    width: 16px;
+    height: 16px;
 }
 
 

@@ -1,3 +1,3 @@
-import content from "../../master.json";
+import content from "./master.json";
 
 export default content;
