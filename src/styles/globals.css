@@ -287,19 +287,22 @@ img {
 
 
 .more-menu summary::after {
-    content: "⌄";
+    content: "";
 
-    display: inline-block;
+    width: 7px;
+    height: 7px;
 
-    width: 12px;
-    height: 12px;
+    margin-left: 7px;
 
-    margin-left: 5px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
 
-    font-size: 0.75rem;
+    transform: rotate(45deg) translateY(-2px);
+
     opacity: 0.55;
 
     transition:
+        transform 0.2s ease,
         opacity 0.2s ease;
 }
 
@@ -317,7 +320,7 @@ img {
 
 
 .more-menu[open] summary::after {
-    content: "—";
+    transform: rotate(225deg) translate(-1px, -1px);
     opacity: 0.5;
 }
 

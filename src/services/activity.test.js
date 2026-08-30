@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import Home, { Home as NamedHome } from "../pages/Home/Home";
 import { fetchCached, getIntensity, mergeActivity, normalizeGithubEvents, normalizeLeetcodeCalendar } from "./activity";
 
 function storage(initial = {}) {
@@ -37,5 +38,12 @@ describe("client cache", () => {
         expect(result.data).toEqual({ value: 1 });
         expect(result.cache).toBe("stale");
         expect(result.error).toBeInstanceOf(Error);
+    });
+});
+
+describe("app exports", () => {
+    it("exposes the default Home component that the app renders", () => {
+        expect(Home).toBeDefined();
+        expect(NamedHome).toBe(Home);
     });
 });
