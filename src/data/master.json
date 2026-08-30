@@ -8,6 +8,36 @@
         "description": "Software developer focused on backend engineering, software architecture, and building modular systems and practical tools.",
         "github": "https://github.com/Akkiraj1234/akhand.dev"
     },
+    "profiles": {
+        "github": {
+            "label": "GitHub",
+            "username": "Akkiraj1234",
+            "url": "https://github.com/Akkiraj1234",
+            "enabled": true
+        },
+        "leetcode": {
+            "label": "LeetCode",
+            "username": "akhand_raj",
+            "url": "https://leetcode.com/u/akhand_raj/",
+            "enabled": true
+        },
+        "roadmap": {
+            "label": "Roadmap.sh",
+            "username": "akhandraj",
+            "url": "https://roadmap.sh/u/akhandraj",
+            "enabled": true
+        }
+    },
+    "social": {
+        "email": "akhandraj402@gmail.com",
+        "x": "",
+        "linkedin": "https://www.linkedin.com/in/akhandrajdev/",
+        "reddit": "",
+        "discord": "",
+        "instagram": ""
+    },
+
+
     "hero": {
         "eyebrow": "AKHAND RAJ / SOFTWARE DEVELOPER",
         "title": "I build things that solve problems.",
@@ -178,34 +208,6 @@
             ]
         }
     ],
-    "profiles": {
-        "github": {
-            "label": "GitHub",
-            "username": "Akkiraj1234",
-            "url": "https://github.com/Akkiraj1234",
-            "enabled": true
-        },
-        "leetcode": {
-            "label": "LeetCode",
-            "username": "akhand_raj",
-            "url": "https://leetcode.com/u/akhand_raj/",
-            "enabled": true
-        },
-        "roadmap": {
-            "label": "Roadmap.sh",
-            "username": "akhandraj",
-            "url": "https://roadmap.sh/u/akhandraj",
-            "enabled": true
-        }
-    },
-    "social": {
-        "email": "akhandraj402@gmail.com",
-        "x": "",
-        "linkedin": "https://www.linkedin.com/in/akhandrajdev/",
-        "reddit": "",
-        "discord": "",
-        "instagram": ""
-    },
     "activity": {
         "enabledSources": [
             "github",

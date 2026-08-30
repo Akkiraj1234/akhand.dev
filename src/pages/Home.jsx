@@ -5,7 +5,7 @@ import {
     useState,
 } from "preact/hooks";
 import site from "../data/site";
-import MainLayout from "../layout/MainLayout";
+import {MainLayout} from "../layout/MainLayout";
 import {
     getIntensity,
     loadActivity,
