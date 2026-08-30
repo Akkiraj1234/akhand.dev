@@ -218,18 +218,21 @@ function MainLayout({ children }) {
 
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
+            const delta = currentScrollY - lastScrollY;
 
-            if (
-                currentScrollY < 72 ||
-                currentScrollY < lastScrollY ||
-                menuActive
-            ) {
+            if (currentScrollY < 72 || menuActive) {
                 setHeaderVisible(true);
-            } else {
-                setHeaderVisible(false);
+                lastScrollY = currentScrollY;
+                return;
             }
 
-            lastScrollY = currentScrollY;
+            if (delta > 10) {
+                setHeaderVisible(false);
+                lastScrollY = currentScrollY;
+            } else if (delta < -10) {
+                setHeaderVisible(true);
+                lastScrollY = currentScrollY;
+            }
         };
 
         window.addEventListener("mousemove", handleMouseMove);
