@@ -30,14 +30,12 @@
     },
     "social": {
         "email": "akhandraj402@gmail.com",
-        "x": "",
         "linkedin": "https://www.linkedin.com/in/akhandrajdev/",
+        "x": "",
         "reddit": "",
         "discord": "",
         "instagram": ""
     },
-
-
     "hero": {
         "eyebrow": "AKHAND RAJ / SOFTWARE DEVELOPER",
         "title": "I build things that solve problems.",
@@ -45,6 +43,8 @@
         "ctaLabel": "See what I'm building",
         "ctaTarget": "#currently"
     },
+
+
     "currently": {
         "label": "Currently building",
         "project": "Shipyard",

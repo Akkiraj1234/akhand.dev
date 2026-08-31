@@ -1,14 +1,10 @@
 import site from "../../../data/site";
-
 import Heading from "./Heading";
 
 
 function CurrentlySection() {
     return (
-        <section
-            id="currently"
-            className="section current-section"
-        >
+        <section id="currently" className="section current-section">
             <Heading
                 eyebrow={site.currently.label}
                 title={site.currently.project}
