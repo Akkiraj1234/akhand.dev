@@ -475,8 +475,8 @@ img {
             (var(--y) + 0.5) * 25%
         );
 
-    width: 5px;
-    height: 5px;
+    width: 10px;
+    height: 10px;
 
     display: block;
 
@@ -497,8 +497,8 @@ img {
 
 
 .pixel-bright {
-    width: 7px;
-    height: 7px;
+    width: 15px;
+    height: 15px;
 
     box-shadow:
         0 0 6px color-mix(

@@ -45,17 +45,7 @@
     },
 
 
-    "currently": {
-        "label": "Currently building",
-        "project": "Shipyard",
-        "description": "An open-source project lifecycle companion for managing the information surrounding software projects, from planning and development to releases and changelogs.",
-        "status": "In development",
-        "focus": [
-            "Software architecture",
-            "Developer tooling",
-            "Modular systems"
-        ]
-    },
+ 
     "about": {
         "short": "I am Akhand Raj — Akki — a software developer focused on backend engineering, software architecture, and building modular systems.",
         "full": "I enjoy understanding how systems work, solving architectural problems, and turning complex ideas into clean, maintainable software. My path into software started with hands-on technical work, followed by teaching programming, software development, and backend engineering. I learn primarily by building real software, experimenting with different approaches, and understanding the trade-offs behind technical decisions. Outside software, I enjoy sketching, archery, chess, and exploring ideas beyond my usual technical interests."
