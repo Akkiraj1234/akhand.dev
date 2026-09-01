@@ -1,5 +1,6 @@
-import site from "../data/site";
 import { useEffect, useRef, useState } from "preact/hooks";
+import useSite from "../hooks/usesite"
+
 
 const navItems = [
     ["Home", "#home"],
@@ -9,17 +10,18 @@ const navItems = [
 ];
 
 
-function MoreMenu({ onMouseInside }) {
-    const profiles = Object.values(site.profiles).filter(
-        (profile) => profile.enabled && profile.url
-    );
 
-    const contacts = Object.entries(site.social).filter(
-        ([, value]) => value
+function isInsideRect(event, rect, padding = 20) {
+    return (
+        event.clientX >= rect.left - padding &&
+        event.clientX <= rect.right + padding &&
+        event.clientY >= rect.top - padding &&
+        event.clientY <= rect.bottom + padding
     );
+}
 
-    const menuRef = useRef(null);
-    const panelRef = useRef(null);
+function useMenuBoundary( menuRef, panelRef, onMouseInside ) {
+    const padding = 20;
 
     useEffect(() => {
         const handleMouseMove = (event) => {
@@ -35,87 +37,132 @@ function MoreMenu({ onMouseInside }) {
             const summaryRect = menu
                 .querySelector("summary")
                 .getBoundingClientRect();
-
-            const padding = 20;
-
-            const inside =
-                (
-                    event.clientX >= panelRect.left - padding &&
-                    event.clientX <= panelRect.right + padding &&
-                    event.clientY >= panelRect.top - padding &&
-                    event.clientY <= panelRect.bottom + padding
-                ) ||
-                (
-                    event.clientX >= summaryRect.left - padding &&
-                    event.clientX <= summaryRect.right + padding &&
-                    event.clientY >= summaryRect.top - padding &&
-                    event.clientY <= summaryRect.bottom + padding
-                );
             
-            if (!inside) {
-                menu.removeAttribute("open");
+            if (
+                isInsideRect(event, panelRect) ||
+                isInsideRect(event, summaryRect)
+            ) {
+                onMouseInside(inside);
+                return;
             }
-            onMouseInside(inside);
+            menu.removeAttribute("open");
         };
-
+        
         document.addEventListener("mousemove", handleMouseMove);
+        
         return () => {
             document.removeEventListener("mousemove", handleMouseMove);
         };
     }, []);
+}
+
+function MoreMenuPanel({ panelRef }) {
+    const profiles = Object.values(useSite("profiles")).filter(
+        (profile) => profile.enabled && profile.url
+    );
+
+    const contacts = Object.entries(useSite("social")).filter(
+        ([, value]) => value
+    );
+
+    return (
+        <div ref={panelRef} className="more-menu-panel">
+            {profiles.map((profile) => (
+                <a
+                    href={profile.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    key={profile.label}
+                >
+                    {profile.label} ↗
+                </a>
+            ))}
+
+            {contacts.map(([name, value]) => {
+                const isEmail = name === "email";
+                return (
+                    <a
+                        href={isEmail ? `mailto:${value}` : value}
+                        target={isEmail ? undefined : "_blank"}
+                        rel={isEmail ? undefined : "noopener noreferrer"}
+                        key={name}
+                    >
+                        {name} {!isEmail && " ↗"}
+                    </a>
+                );
+            })}
+
+            {!contacts.length && !profiles.length && (
+                <span className="muted-menu-item">
+                    Contact coming soon
+                </span>
+            )}
+        </div>
+    );
+}
+
+
+function MoreMenu({ onMouseInside }) {
+    // data fatch for profile and contacts
+    // happen in MoreMenuPanel
+
+    const menuRef = useRef(null);
+    const panelRef = useRef(null);
+
+    useMenuBoundary(menuRef, panelRef, onMouseInside);
 
     return (
         <details ref={menuRef} className="more-menu">
             <summary>More</summary>
-            <div ref={panelRef} className="more-menu-panel">
-                {profiles.map((profile) => (
-                    <a
-                        href={profile.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        key={profile.label}
-                    >
-                        {profile.label} ↗
-                    </a>
-                ))}
-
-                {contacts.map(([name, value]) => {
-                    const isEmail = name === "email";
-                    return (
-                        <a
-                            href={isEmail ? `mailto:${value}` : value}
-                            target={isEmail ? undefined : "_blank"}
-                            rel={isEmail ? undefined : "noopener noreferrer"}
-                            key={name}
-                        >
-                            {name} {!isEmail && " ↗"}
-                        </a>
-                    );
-                })}
-
-                {!contacts.length && !profiles.length && (
-                    <span className="muted-menu-item">
-                        Contact coming soon
-                    </span>
-                )}
-            </div>
+            <MoreMenuPanel
+                panelRef={panelRef}
+            />
         </details>
     );
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function Header({ toggleTheme, theme, headerVisible, onMenuMouseInside }) {
-    const site_data = site.site;
+    const sitedata = useSite("site");
+
+    console.log("HEADER: i re run again")
 
     return (
         <header className = {`site-header ${headerVisible ? "" : "hidden"}`}>
-            <a className="wordmark" href="#home" aria-label={`${site_data.name} home`}>
+            <a className="wordmark" href="#home" aria-label={`${sitedata.name} home`}>
                 <img
                     src={
                         theme === "dark"
                             ? "/transparent_logo_dark.svg"
                             : "/transparent_logo_light.svg"
                     }
-                    alt={`${site_data.name} logo`}
+                    alt={`${sitedata.name} logo`}
                 />
             </a>
 
@@ -149,23 +196,24 @@ function Header({ toggleTheme, theme, headerVisible, onMenuMouseInside }) {
 }
 
 function Footer() {
-    const site_data = site.site;
+    console.log("FOOTER: i re run again")
+    const sitedata = useSite("site");
     return (
         <footer className="site-footer">
             <div className="footer-identity">
-                <strong>{site_data.fullName}</strong>
-                <span>{site_data.title}</span>
+                <strong>{sitedata.fullName}</strong>
+                <span>{sitedata.title}</span>
             </div>
 
             <nav className="footer-links">
-                <a href={site_data.github}>
+                <a href={sitedata.github}>
                     <img src="https://api.iconify.design/bi:github.svg" alt=""/>
                     Source code
                 </a>
             </nav>
 
             <div className="footer-meta">
-                <span>© {new Date().getFullYear()} {site_data.fullName}</span>
+                <span>© {new Date().getFullYear()} {sitedata.fullName}</span>
                 <span>Made with care and love. Built to be useful.</span>
             </div>
         </footer>

@@ -17,4 +17,10 @@ const site = {
     },
 };
 
+
+if (import.meta.env.DEV) {
+    window.site = site;
+}
+
+
 export default site;
