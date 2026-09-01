@@ -1,3 +1,20 @@
-import content from "./master.json";
+import master from "./master.json";
+import Store from "./store";
 
-export default content;
+const store = new Store(master);
+
+const site = {
+    get(key) {
+        return store.get(key);
+    },
+
+    put(key, value) {
+        return store.put(key, value);
+    },
+
+    watch(key, listener) {
+        return store.watch(key, listener);
+    },
+};
+
+export default site;

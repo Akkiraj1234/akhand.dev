@@ -43,6 +43,17 @@
         "ctaLabel": "See what I'm building",
         "ctaTarget": "#currently"
     },
+     "currently": {
+        "label": "Currently building",
+        "project": "Shipyard",
+        "description": "An open-source project lifecycle companion for managing the information surrounding software projects, from planning and development to releases and changelogs.",
+        "status": "In development",
+        "focus": [
+            "Software architecture",
+            "Developer tooling",
+            "Modular systems"
+        ]
+    },
 
 
  
