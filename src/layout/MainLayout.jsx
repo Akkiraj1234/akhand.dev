@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import useSite from "../hooks/useSite"
+import useSite from "../hooks/useSite";
+import site from "../data/site";
 
 
 const navItems = [
@@ -10,13 +11,12 @@ const navItems = [
 ];
 
 
-
 function getInitialTheme() {
     if (typeof window === "undefined") {
         return "dark";
     }
 
-    const saved = localStorage.getItem("akhand.dev:theme");
+    const saved = localStorage.getItem("akhand.dev:thb eme");
 
     if (saved === "light" || saved === "dark") {
         return saved;
@@ -34,7 +34,7 @@ function isInsideRect(event, rect, padding) {
     );
 }
 
-function useMenuBoundary( menuRef, panelRef, onMouseInside ) {
+function useMenuBoundary( menuRef, panelRef ) {
     const padding = 20;
 
     const handleMouseMove = (event) => {
@@ -42,7 +42,6 @@ function useMenuBoundary( menuRef, panelRef, onMouseInside ) {
         const panel = panelRef.current;
 
         if (!menu?.open || !panel) {
-            onMouseInside(false);
             return;
         }
 
@@ -50,22 +49,17 @@ function useMenuBoundary( menuRef, panelRef, onMouseInside ) {
         const summary = menu.querySelector("summary");
 
         if (!summary) {
-            onMouseInside(false);
             return;
         }
 
         const summaryRect = summary.getBoundingClientRect();
-
-        if (
-            isInsideRect(event, panelRect, padding) ||
-            isInsideRect(event, summaryRect, padding)
-        ) {
-            onMouseInside(true);
-            return;
+        const inside =
+                isInsideRect(event, panelRect, padding) ||
+                isInsideRect(event, summaryRect, padding);
+        
+        if (!inside) {
+            menu.removeAttribute('open');
         }
-
-        onMouseInside(false);
-        menu.removeAttribute("open");
     };
 
     useEffect(() => {
@@ -78,7 +72,7 @@ function useMenuBoundary( menuRef, panelRef, onMouseInside ) {
                 "mousemove", 
                 handleMouseMove
             );
-        };
+        }
     }, []);
 }
 
@@ -127,16 +121,16 @@ function MoreMenuPanel({ panelRef }) {
     );
 }
 
-function useHeaderVisible( setHeaderVisible, menuActive ) {
+function useHeaderVisible( setHeaderVisible, isMenuActive ) {
     useEffect(() => {
         let lastScrollY = window.scrollY;
         let lastMouseY = window.innerHeight;
 
-        const handleMouseMove = (event) => {
+        function handleMouseMove(event) {
             const currentMouseY = event.clientY;
             const movingDown = currentMouseY > lastMouseY;
 
-            if (currentMouseY < 75 || menuActive) {
+            if (currentMouseY < 75 || isMenuActive()) {
                 setHeaderVisible(true);
             } else if (
                 window.scrollY >= 72 &&
@@ -147,11 +141,11 @@ function useHeaderVisible( setHeaderVisible, menuActive ) {
             lastMouseY = currentMouseY;
         };
         
-        const handleScroll = () => {
+        function handleScroll() {
             const currentScrollY = window.scrollY;
             const delta = currentScrollY - lastScrollY;
 
-            if (currentScrollY < 72 || menuActive) {
+            if (currentScrollY < 72 || isMenuActive()) {
                 setHeaderVisible(true);
                 lastScrollY = currentScrollY;
                 return;
@@ -172,25 +166,14 @@ function useHeaderVisible( setHeaderVisible, menuActive ) {
         return () => {
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("scroll", handleScroll);
-        };
-    }, [menuActive]);
+        }
+    }, []);
 }
 
-
-
-function Footer() {
-
-}
-
-
-function MoreMenu({ onMouseInside }) {
+function MoreMenu({ menuRef, panelRef }) {
     // data fatch for profile and contacts
     // happen in MoreMenuPanel
-
-    const menuRef = useRef(null);
-    const panelRef = useRef(null);
-
-    useMenuBoundary(menuRef, panelRef, onMouseInside);
+    useMenuBoundary(menuRef, panelRef);
 
     return (
         <details ref={menuRef} className="more-menu">
@@ -203,23 +186,22 @@ function MoreMenu({ onMouseInside }) {
 }
 
 
-function Header({ toggleTheme, theme, headerVisible, onMenuMouseInside }) {
-    const sitedata = useSite("site");
+function HeaderElement({ headerRef, menuRef, panelRef }) {
     const [theme, setTheme] = useState(getInitialTheme);
-    const [headerVisible, setHeaderVisible] = useState(true);
+    const sitedata = useSite("site");
 
     useEffect(() => {
         document.documentElement.dataset.theme = theme;
         localStorage.setItem("akhand.dev:theme", theme);
+        site.put("theme", theme);
     }, [theme]);
 
-    useHeaderVisible()
     const toggleTheme = () => {
         setTheme((current) => (current === "dark" ? "light" : "dark"));
     };
-    
+
     return (
-        <header className = {`site-header ${headerVisible ? "" : "hidden"}`}>
+        <header ref={headerRef} className="site-header">
             <a className="wordmark" href="#home" aria-label={`${sitedata.name} home`}>
                 <img
                     src={
@@ -236,7 +218,7 @@ function Header({ toggleTheme, theme, headerVisible, onMenuMouseInside }) {
                     <a href={href} key={href}>{ label }</a>
                 ))}
                 
-                <MoreMenu onMouseInside={onMenuMouseInside} />
+                <MoreMenu menuRef={menuRef} panelRef={panelRef}/>
                 
                 <button 
                     className="theme-toggle" 
@@ -260,34 +242,39 @@ function Header({ toggleTheme, theme, headerVisible, onMenuMouseInside }) {
     );
 }
 
+function Header() {
+    const headerRef = useRef(null);
+    const menuRef = useRef(null);
+    const panelRef = useRef(null);
 
-function MainLayout({ children }) {
+    const setHeaderVisible = (visible) => {
+        headerRef.current?.classList.toggle(
+            "hidden",
+            !visible
+        );
+    };
+
+    const isMenuActive = () => {
+        return menuRef.current?.open ?? false;
+    };
+
+    useHeaderVisible(
+        setHeaderVisible, 
+        isMenuActive
+    );
+
     return (
-        <div className="site-shell">
-            <Header/>
-            {children}
-            <Footer/>
-        </div>
+        <HeaderElement
+            headerRef={headerRef}
+            menuRef={menuRef}
+            panelRef={panelRef}
+        />
     );
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function Footer() {
-    console.log("FOOTER: i re run again")
     const sitedata = useSite("site");
+
     return (
         <footer className="site-footer">
             <div className="footer-identity">
@@ -310,37 +297,16 @@ function Footer() {
     )
 }
 
-
-
 function MainLayout({ children }) {
-    const [theme, setTheme] = useState(getInitialTheme);
-    const [headerVisible, setHeaderVisible] = useState(true);
-    const [menuActive, setMenuActive] = useState(false);
-    
-    useEffect(() => {
-        document.documentElement.dataset.theme = theme;
-        localStorage.setItem("akhand.dev:theme", theme);
-    }, [theme]);
-
-    
-
-    const toggleTheme = () => {
-        setTheme((current) => (current === "dark" ? "light" : "dark"));
-    };
-
     return (
         <div className="site-shell">
-            <Header
-                toggleTheme={toggleTheme}
-                theme={theme}
-                headerVisible={headerVisible}
-                onMenuMouseInside={setMenuActive}
-            />
+            <Header/>
             {children}
             <Footer/>
         </div>
     );
 }
+
 
 export {
     MainLayout,
