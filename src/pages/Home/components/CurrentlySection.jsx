@@ -1,4 +1,4 @@
-import site from "../../../data/site";
+import useSite from "../../../hooks/useSite"
 import Heading from "./Heading";
 
 

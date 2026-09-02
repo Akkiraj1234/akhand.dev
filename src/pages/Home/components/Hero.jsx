@@ -1,8 +1,7 @@
-import site from "../../../data/site";
-
+import useSite from "../../../hooks/useSite"
 
 function Hero() {
-    const hero = site.hero
+    const hero = useSite("hero")
     const Pixel = (
         <div className="pixel-field" aria-hidden="true">
             {Array.from({ length: 48 }, (_, index) => (
