@@ -1,5 +1,6 @@
 import { render } from "preact";
 import App from "./app";
 import "./styles/globals.css";
+import "./styles/responsive.css"
 
 render(<App />, document.getElementById("app"));

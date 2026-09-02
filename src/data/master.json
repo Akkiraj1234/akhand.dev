@@ -49,13 +49,37 @@
         "projects": [
             {
                 "name": "shipyard",
-                "description": "An open-source project lifecycle companion for managing the information surrounding software projects, from planning and development to releases and changelogs.",
+                "description": "Most of my projects start with a practical problem and grow through experimentation and iteration.",
                 "status": "In development",
-                "focus": [
-                    "Software architecture",
-                    "Developer tooling",
-                    "Modular systems"
-                ]
+                "topics": [
+                    "python",
+                    "cli",
+                    "developer-tools",
+                    "software-architecture"
+                ],
+                "languages": {
+                    "Python": 72,
+                    "C++": 18,
+                    "JavaScript": 10
+                },
+                "commits": 142
+            },
+            {
+                "name": "Testpy",
+                "description": "Software developer focused on backend engineering, software architecture, and building modular systems and practical tools.",
+                "status": "In development",
+                "topics": [
+                    "python",
+                    "cli",
+                    "developer-tools",
+                    "software-architecture"
+                ],
+                "languages": {
+                    "Python": 72,
+                    "C++": 18,
+                    "JavaScript": 10
+                },
+                "commits": 153
             }
         ]
     },

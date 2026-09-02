@@ -3,7 +3,9 @@ function Heading({ eyebrow, title, description }) {
         <div className="section-heading">
             <p className="eyebrow">{eyebrow}</p>
 
-            <h2>{title}</h2>
+            {title && (
+                <h2>{title}</h2>
+            )}
 
             {description && (
                 <p className="section-intro">
@@ -13,6 +15,5 @@ function Heading({ eyebrow, title, description }) {
         </div>
     );
 }
-
 
 export default Heading;

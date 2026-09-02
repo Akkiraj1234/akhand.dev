@@ -1,7 +1,7 @@
 import { MainLayout } from "../../layout/MainLayout";
 
 import Hero from "./components/Hero";
-// import CurrentlySection from "./components/CurrentlySection";
+import CurrentlySection from "./components/CurrentlySection";
 // import ActivitySection from "./components/ActivitySection";
 // import ProjectsSection from "./components/ProjectsSection";
 // import PhilosophySection from "./components/PhilosophySection";
@@ -16,8 +16,8 @@ function Home() {
         <MainLayout>
             <main id="home">
                 <Hero />
-                {/* <CurrentlySection />
-                <ActivitySection />
+                <CurrentlySection />
+                {/* <ActivitySection />
                 <ProjectsSection />
                 <PhilosophySection />
                 <AboutSection />

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import useSite from "../hooks/useSite";
 import site from "../data/site";
+import "./MainLayout.css"
 
 
 const navItems = [
@@ -202,7 +203,7 @@ function HeaderElement({ headerRef, menuRef, panelRef }) {
 
     return (
         <header ref={headerRef} className="site-header">
-            <a className="wordmark" href="#home" aria-label={`${sitedata.name} home`}>
+            <a className="logo" href="#home" aria-label={`${sitedata.name} home`}>
                 <img
                     src={
                         theme === "dark"

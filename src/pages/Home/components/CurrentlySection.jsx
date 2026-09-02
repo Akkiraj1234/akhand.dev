@@ -1,47 +1,107 @@
-import useSite from "../../../hooks/useSite"
+import { useState } from "preact/hooks";
+import useSite from "../../../hooks/useSite";
 import Heading from "./Heading";
 
 
 function CurrentlySection() {
+    const currently = useSite("currently");
+    const [selectedProject, setSelectedProject] = useState(0);
+
+    const project = currently.projects[selectedProject];
+
     return (
-        <section id="currently" className="section current-section">
+        <section
+            id="currently"
+            className="section current-section"
+        >
             <Heading
-                eyebrow={site.currently.label}
-                title={site.currently.project}
+                eyebrow={currently.label}
             />
 
             <div className="current-grid">
-                <div className="current-description">
-                    <p>
-                        {site.currently.description}
-                    </p>
-                </div>
 
-                <div className="current-meta">
-                    <p className="eyebrow">
-                        Status
-                    </p>
+                <div className="current-main">
+                    <h3 className="current-project-name">
+                        {project.name}
+                    </h3>
 
-                    <strong>
-                        {site.currently.status}
-                    </strong>
-                </div>
+                    <div className="current-description">
+                        <p>
+                            {project.description}
+                        </p>
+                    </div>
 
-                <div className="current-meta">
-                    <p className="eyebrow">
-                        Focus
-                    </p>
+                    <div className="current-meta">
+                        <p className="eyebrow">
+                            Status
+                        </p>
 
-                    <ul>
-                        {site.currently.focus.map(
-                            (item) => (
-                                <li key={item}>
-                                    {item}
+                        <strong>
+                            {project.status}
+                        </strong>
+                    </div>
+
+                    <div className="current-meta">
+                        <p className="eyebrow">
+                            Topics
+                        </p>
+
+                        <ul>
+                            {project.topics.map((topic) => (
+                                <li key={topic}>
+                                    {topic}
                                 </li>
-                            )
-                        )}
-                    </ul>
+                            ))}
+                        </ul>
+                    </div>
+
+                    <div className="current-meta">
+                        <p className="eyebrow">
+                            Languages
+                        </p>
+
+                        <ul>
+                            {Object.entries(project.languages).map(
+                                ([language, percentage]) => (
+                                    <li key={language}>
+                                        {language} {percentage}%
+                                    </li>
+                                )
+                            )}
+                        </ul>
+                    </div>
+
+                    <div className="current-meta">
+                        <p className="eyebrow">
+                            Commits
+                        </p>
+
+                        <strong>
+                            {project.commits}
+                        </strong>
+                    </div>
                 </div>
+
+                <nav
+                    className="current-projects"
+                    aria-label="Currently building projects"
+                >
+                    {currently.projects.map((item, index) => (
+                        <button
+                            key={item.name}
+                            type="button"
+                            className={
+                                index === selectedProject
+                                    ? "current-project active"
+                                    : "current-project"
+                            }
+                            onClick={() => setSelectedProject(index)}
+                        >
+                            {item.name}
+                        </button>
+                    ))}
+                </nav>
+
             </div>
         </section>
     );
