@@ -69,21 +69,6 @@
     }
 }
 
-.section-heading {
-    max-width: 680px;
-}
-
-.section h2 {
-    font-size: clamp(3.4rem, 7vw, 6.5rem);
-    line-height: .83;
-}
-
-.section-intro {
-    color: var(--muted);
-    max-width: 600px;
-    line-height: 1.75;
-}
-
 @media (hover: none) {
     .wordmark:hover,
     .site-header nav > a:hover,

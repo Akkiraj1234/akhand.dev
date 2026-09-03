@@ -49,37 +49,37 @@
         "projects": [
             {
                 "name": "shipyard",
-                "description": "Most of my projects start with a practical problem and grow through experimentation and iteration.",
-                "status": "In development",
+                "description": "Shipyard is a repository-first project lifecycle companion that manages the information surrounding your source code. It organizes roadmaps, changelogs, ideas, tasks, and project metadata while integrating with existing tools instead of replacing them.",
+                "commits": 67,
+                "release_version": "v0.1",
                 "topics": [
-                    "python",
-                    "cli",
-                    "developer-tools",
-                    "software-architecture"
+                    "Developer Tools",
+                    "Developer Productivity",
+                    "Project Management"
                 ],
                 "languages": {
                     "Python": 72,
                     "C++": 18,
                     "JavaScript": 10
                 },
-                "commits": 142
+                "star": 0
             },
             {
-                "name": "Testpy",
-                "description": "Software developer focused on backend engineering, software architecture, and building modular systems and practical tools.",
-                "status": "In development",
+                "name": "akki-core-backend",
+                "description": "akki-core-backend is a modular backend system for orchestrating data from multiple external services, delivering normalized, cached data and APIs that power all internal projects.",
+                "commits": 91,
+                "release_version": "v1.1",
                 "topics": [
-                    "python",
-                    "cli",
-                    "developer-tools",
-                    "software-architecture"
+                    "backned",
+                    "backend-development",
+                    "plugin-architecture"
                 ],
                 "languages": {
                     "Python": 72,
                     "C++": 18,
                     "JavaScript": 10
                 },
-                "commits": 153
+                "star": 0
             }
         ]
     },
