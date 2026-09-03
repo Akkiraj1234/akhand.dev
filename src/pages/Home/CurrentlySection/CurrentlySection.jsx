@@ -1,7 +1,7 @@
 import { useState } from "preact/hooks";
 import useSite from "../../../hooks/useSite";
 import Heading from "../../Shipyard/components/Heading";
-import "./CurrentlySection.css"
+import "./currentlysection.css"
 
 
 function CurrentlySection() {
