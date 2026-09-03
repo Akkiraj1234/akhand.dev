@@ -11,6 +11,7 @@ function CurrentlySection() {
     const project = currently.projects[selectedProject];
 
     return (
+        <div className="container">
         <section
             id="currently"
             className="section current-section"
@@ -105,6 +106,7 @@ function CurrentlySection() {
 
             </div>
         </section>
+        </div>
     );
 }
 
