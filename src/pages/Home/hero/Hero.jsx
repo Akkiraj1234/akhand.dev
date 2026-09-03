@@ -1,4 +1,5 @@
 import useSite from "@/hooks/useSite";
+import "./hero.css"
 
 function Hero() {
     const hero = useSite("hero")

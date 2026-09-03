@@ -1,6 +1,7 @@
 import MainLayout from "@/layout/MainLayout";
 
-import Hero from "./hero/Hero";
+import Hero from "./Hero/Hero";
+import CurrentlySection from "./CurrentlySection/CurrentlySection";
 // import CurrentlySection from "./components/CurrentlySection";
 // import ActivitySection from "./components/ActivitySection";
 // import ProjectsSection from "./components/ProjectsSection";
@@ -16,6 +17,7 @@ function Home() {
         <MainLayout>
             <main id="home">
                 <Hero /> 
+                <CurrentlySection/>
             </main>
         </MainLayout>
     );
