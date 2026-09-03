@@ -1,5 +1,5 @@
 import { useEffect, useState } from "preact/hooks";
-import site from "../data/site";
+import site from "@/data/site";
 
 
 function useSite(key) {

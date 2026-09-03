@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import useSite from "../../hooks/useSite";
-import site from "../../data/site"
+import useSite from "@/hooks/useSite";
+import site from "@/data/site"
 import MoreMenu from "./Menu"
 
 

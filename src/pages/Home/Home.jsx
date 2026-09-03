@@ -1,7 +1,7 @@
-import { MainLayout } from "../../layout/MainLayout";
+import MainLayout from "@/layout/MainLayout";
 
-import Hero from "./components/Hero";
-import CurrentlySection from "./components/CurrentlySection";
+import Hero from "./hero/Hero";
+// import CurrentlySection from "./components/CurrentlySection";
 // import ActivitySection from "./components/ActivitySection";
 // import ProjectsSection from "./components/ProjectsSection";
 // import PhilosophySection from "./components/PhilosophySection";
@@ -15,15 +15,7 @@ function Home() {
     return (
         <MainLayout>
             <main id="home">
-                <Hero />
-                <CurrentlySection />
-                {/* <ActivitySection />
-                <ProjectsSection />
-                <PhilosophySection />
-                <AboutSection />
-                <InterestsSection />
-                <BlogSection />
-                <AskSection /> */}
+                <Hero /> 
             </main>
         </MainLayout>
     );

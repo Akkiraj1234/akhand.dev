@@ -1,5 +1,5 @@
 import { useEffect } from "preact/hooks";
-import useSite from "../../hooks/useSite";
+import useSite from "@/hooks/useSite";
 
 
 function isInsideRect(event, rect, padding) {

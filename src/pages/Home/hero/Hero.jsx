@@ -1,4 +1,4 @@
-import useSite from "../../../hooks/useSite"
+import useSite from "@/hooks/useSite";
 
 function Hero() {
     const hero = useSite("hero")
