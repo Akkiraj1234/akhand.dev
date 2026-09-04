@@ -326,6 +326,8 @@
         20px
         15px
         max(20px, env(safe-area-inset-bottom));
+    
+    margin-top: 40px;
 
     color: var(--muted);
     font-size: 0.70rem;

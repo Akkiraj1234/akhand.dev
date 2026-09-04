@@ -28,47 +28,6 @@
    Mobile
    ========================================= */
 
-@media (width <= 700px) {
-
-    .current-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .current-main {
-        padding: 24px 20px;
-
-        grid-template-columns: 1fr;
-
-        gap: 24px;
-    }
-
-    .current-projects {
-        order: -1;
-
-        border-left: 0;
-        border-bottom: 1px solid var(--line);
-
-        padding: 0;
-
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-
-    .current-project {
-        width: auto;
-
-        border-left: 0;
-        border-bottom: 2px solid transparent;
-
-        padding: 9px 12px;
-    }
-
-    .current-project.active {
-        border-left-color: transparent;
-        border-bottom-color: var(--ink);
-    }
-}
-
 @media (hover: none) {
     .wordmark:hover,
     .site-header nav > a:hover,

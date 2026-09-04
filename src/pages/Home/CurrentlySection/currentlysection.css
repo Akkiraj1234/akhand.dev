@@ -2,3 +2,500 @@
     overflow: hidden;
 }
 
+
+/* ─────────────────────────────
+   Layout
+───────────────────────────── */
+
+.current-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+
+    background: color-mix(
+        in srgb,
+        var(--soft) 48%,
+        transparent
+    );
+}
+
+
+/* ─────────────────────────────
+   Current Content
+───────────────────────────── */
+
+.current-content {
+    min-width: 0;
+
+    padding: 30px;
+}
+
+
+/* Header */
+
+.current-content-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+
+    gap: 32px;
+    margin-bottom: 18px;
+}
+
+.current-content-header h3 {
+    margin: 7px 0 0;
+
+    color: var(--ink);
+
+    font-size: 1.3rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+}
+
+.current-content-header > p {
+    flex: none;
+
+    margin: 0;
+
+    color: var(--muted);
+
+    font-family: "DM Mono", monospace;
+    font-size: 0.62rem;
+    font-weight: 400;
+
+    white-space: nowrap;
+}
+
+
+/* ─────────────────────────────
+   Description
+───────────────────────────── */
+
+.current-content-description {
+    min-height: 100px;
+    max-height: 140px;
+
+    margin-bottom: 18px;
+
+    overflow: hidden;
+}
+
+.current-content-description p {
+    max-width: 680px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.65;
+
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+
+    line-clamp: 4;
+    -webkit-line-clamp: 4;
+
+    overflow: hidden;
+}
+
+.current-content-description.expanded {
+    max-height: none;
+
+    overflow: visible;
+}
+
+.current-content-description.expanded p {
+    display: block;
+
+    line-clamp: none;
+    -webkit-line-clamp: unset;
+
+    overflow: visible;
+}
+
+
+/* Read more / show less */
+
+.current-description-toggle {
+    display: inline-flex;
+
+    margin-top: 8px;
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+
+    color: var(--accent);
+
+    font-family: "DM Mono", monospace;
+    font-size: 0.62rem;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition: color 150ms ease;
+}
+
+.current-description-toggle:hover {
+    color: var(--ink);
+}
+
+
+/* ─────────────────────────────
+   Topics
+───────────────────────────── */
+
+.current-content-topics {
+    padding-top: 14px;
+
+    border-top: 1px solid var(--line);
+}
+
+
+/*
+   Keep the semantic heading in the DOM
+   without taking visual space.
+*/
+
+.current-content-eyebrow {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+
+    padding: 0;
+    margin: -1px;
+
+    overflow: hidden;
+
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+
+    border: 0;
+}
+
+
+/* Topic tags */
+
+.current-content-topics ul {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 5px;
+
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.current-content-topics li {
+    padding: 4px 7px;
+
+    border: 1px solid var(--line);
+    border-radius: 5px;
+
+    color: var(--muted);
+
+    font-family: "DM Mono", monospace;
+    font-size: 0.6rem;
+    line-height: 1;
+}
+
+
+/* ─────────────────────────────
+   Details
+───────────────────────────── */
+
+.current-content-details {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    padding-top: 12px;
+    margin-top: 14px;
+
+    border-top: 1px solid var(--line);
+}
+
+.current-content-details > p {
+    margin: 0;
+
+    color: var(--muted);
+
+    font-family: "DM Mono", monospace;
+    font-size: 0.6rem;
+}
+
+
+/* ─────────────────────────────
+   Project Sidebar
+───────────────────────────── */
+
+.current-projects {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 30px 24px;
+
+    border-left: 1px solid var(--line);
+
+    background: color-mix(
+        in srgb,
+        var(--paper) 45%,
+        transparent
+    );
+}
+
+/* ─────────────────────────────
+   Project Header
+───────────────────────────── */
+
+.current-projects-header {
+    display: flex;
+    flex-direction: column;
+
+    margin-bottom: 18px;
+}
+
+.current-projects-label {
+    color: var(--ink);
+
+    font-size: 1.35rem;
+    font-weight: 500;
+    line-height: 1.1;
+}
+
+
+/* ─────────────────────────────
+   Project Metadata
+───────────────────────────── */
+
+.current-projects-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    margin-top: 18px;
+}
+
+
+/* Days */
+
+.current-projects-days-info {
+    display: flex;
+    align-items: baseline;
+
+    gap: 5px;
+}
+
+.current-projects-meta-label {
+    color: var(--muted);
+
+    font-family: "DM Mono", monospace;
+    font-size: 0.58rem;
+    font-weight: 400;
+}
+
+.current-projects-days {
+    color: var(--muted);
+
+    font-family: "DM Mono", monospace;
+    font-size: 0.64rem;
+    font-weight: 500;
+
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* Date */
+
+.current-projects-date {
+    color: var(--ink);
+
+    font-family: "DM Mono", monospace;
+    font-size: 0.82rem;
+    font-weight: 400;
+
+    white-space: nowrap;
+}
+/* ─────────────────────────────
+   Project List
+───────────────────────────── */
+
+.current-project-list {
+    display: flex;
+    flex-direction: column;
+
+    margin-top: 2px;
+}
+
+
+/* ─────────────────────────────
+   Project Item
+───────────────────────────── */
+
+.current-project {
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+
+    padding: 9px 0;
+
+    border: 0;
+    border-top: 1px solid var(--line);
+
+    background: transparent;
+
+    color: var(--muted);
+
+    font-family: "DM Mono", monospace;
+    font-size: 0.72rem;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        color 150ms ease,
+        padding-left 150ms ease;
+}
+
+.current-project:hover {
+    color: var(--ink);
+}
+
+.current-project.active {
+    padding-left: 2px;
+
+    color: var(--ink);
+}
+
+
+/* ─────────────────────────────
+   Responsive
+───────────────────────────── */
+
+@media (max-width: 760px) {
+    .current-layout {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .current-projects {
+        width: 100%;
+
+        border-top: 1px solid var(--line);
+        border-left: 0;
+    }
+}
+
+
+@media (max-width: 640px) {
+    .current-content {
+        padding: 24px;
+    }
+
+    .current-projects {
+        padding: 24px;
+    }
+
+
+    /* ─────────────────────────
+       Current content header
+    ───────────────────────── */
+
+    .current-content-header {
+        align-items: flex-start;
+        flex-direction: column;
+
+        gap: 6px;
+    }
+
+
+    /* ─────────────────────────
+       Project header
+    ───────────────────────── */
+
+    .current-projects-header {
+        display: grid;
+
+        grid-template-columns:
+            minmax(0, 1fr)
+            auto;
+
+        grid-template-areas:
+            "title days"
+            "date date";
+
+        column-gap: 12px;
+        row-gap: 4px;
+
+        margin-bottom: 14px;
+    }
+
+    .current-projects-label {
+        grid-area: title;
+
+        font-size: 0.92rem;
+    }
+
+
+    /* ─────────────────────────
+       Project metadata
+    ───────────────────────── */
+
+    .current-projects-meta {
+        display: contents;
+    }
+
+    .current-projects-days-info {
+        grid-area: days;
+
+        display: flex;
+        align-items: baseline;
+        justify-content: flex-end;
+
+        gap: 4px;
+
+        white-space: nowrap;
+    }
+
+    .current-projects-meta-label {
+        color: var(--muted);
+
+        font-family: "DM Mono", monospace;
+        font-size: 0.58rem;
+        font-weight: 400;
+    }
+
+    .current-projects-days {
+        color: var(--ink);
+
+        font-family: "DM Mono", monospace;
+        font-size: 0.62rem;
+        font-weight: 500;
+
+        font-variant-numeric: tabular-nums;
+    }
+
+    .current-projects-date {
+        grid-area: date;
+
+        margin: 0;
+
+        color: var(--muted);
+
+        font-family: "DM Mono", monospace;
+        font-size: 0.58rem;
+
+        white-space: nowrap;
+    }
+}
