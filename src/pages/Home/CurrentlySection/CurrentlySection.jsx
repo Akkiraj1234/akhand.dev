@@ -1,7 +1,7 @@
-import { useState } from "preact/hooks";
+import {LanguageList, RenderCard} from "@/components/LanguageList";
+import { useEffect, useRef, useState } from "preact/hooks";
 import useSite from "@/hooks/useSite";
 import Heading from "@/components/Heading";
-import LanguageList from "@/components/LanguageList";
 import "./currentlysection.css";
 
 
@@ -61,6 +61,30 @@ const CurrentProjects = ({ data, onClickFunc, currIdx }) => {
 
 const CurrentContent = ({ project }) => {
     const [expanded, setExpanded] = useState(false);
+    const [isOverflowing, setIsOverflowing] = useState(false);
+    const descriptionRef = useRef(null);
+
+    useEffect(() => {
+        setExpanded(false);
+
+        const element = descriptionRef.current;
+
+        if (!element) return;
+
+        const checkOverflow = () => {
+            setIsOverflowing(
+                element.scrollHeight > element.clientHeight
+            );
+        };
+
+        checkOverflow();
+
+        window.addEventListener("resize", checkOverflow);
+
+        return () => {
+            window.removeEventListener("resize", checkOverflow);
+        };
+    }, [project.description]);
 
     return (
         <article className="current-content">
@@ -76,15 +100,17 @@ const CurrentContent = ({ project }) => {
                         : "current-content-description"
                 }
             >
-                <p>{project.description}</p>
+                <p ref={descriptionRef}>{project.description}</p>
 
-                <button
-                    type="button"
-                    className="current-description-toggle"
-                    onClick={() => setExpanded((value) => !value)}
-                >
-                    {expanded ? "show less" : "read more"}
-                </button>
+                {(isOverflowing || expanded) && (
+                    <button
+                        type="button"
+                        className="current-description-toggle"
+                        onClick={() => setExpanded((value) => !value)}
+                    >
+                        {expanded ? "show less" : "read more"}
+                    </button>
+                )}
             </div>
 
             <section className="current-content-topics">
@@ -101,8 +127,13 @@ const CurrentContent = ({ project }) => {
 
             <div className="current-content-details">
                 <LanguageList languages={project.languages} />
-                <p>{"project star: "}{project.star}</p>
-                <p>{project.release_version}</p>
+                <RenderCard
+                    text1={project.star}
+                    icon={"https://api.iconify.design/akar-icons:star.svg?color=%23eff6e9"}
+                />
+                <RenderCard
+                    text1={project.release_version}
+                />
             </div>
         </article>
     );

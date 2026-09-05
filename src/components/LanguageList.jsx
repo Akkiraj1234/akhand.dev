@@ -172,17 +172,12 @@ const LANGUAGE_CONFIG = {
 };
 
 
-
-
-function RenderLangugaecard({key, language, percentage}) {
-    const config = LANGUAGE_CONFIG[language] 
-        ?? LANGUAGE_CONFIG["other"];
-
+function RenderCard({ text1, text2=null, icon=null, key=null}) {
     return (
-        <div className="language-card" key={key}>
-            {config?.icon && (
+        <div className="language-card" key={key ?? text1}>
+            {icon && (
                 <img
-                    src={config.icon}
+                    src={icon}
                     alt=""
                     aria-hidden="true"
                     className="language-icon"
@@ -190,13 +185,30 @@ function RenderLangugaecard({key, language, percentage}) {
             )}
 
             <span className="language-name">
-                {language}
+                {text1}
             </span>
 
-            <span className="language-percentage">
-                {percentage}%
-            </span>
+            {text2 && (
+                <span className="language-percentage">
+                    {text2}
+                </span>
+            )}
         </div>
+    )
+}
+
+
+function RenderLanguageCard({language, percentage}) {
+    const config = 
+        LANGUAGE_CONFIG[language] ??
+        LANGUAGE_CONFIG["other"];
+
+    return (
+        <RenderCard
+            text1={language}
+            text2={`${percentage}%`}
+            icon={config?.icon}
+        />
     )
 }
 
@@ -206,8 +218,7 @@ function LanguageList({ languages }) {
         <div className="language-list">
             {Object.entries(languages).map(
                 ([language, percentage]) => (
-                    <RenderLangugaecard
-                        key={language}
+                    <RenderLanguageCard
                         language={language}
                         percentage={percentage}
                     />
@@ -219,4 +230,7 @@ function LanguageList({ languages }) {
 
 
 export default LanguageList;
-
+export {
+    LanguageList,
+    RenderCard
+}

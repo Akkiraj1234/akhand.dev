@@ -75,8 +75,8 @@
 ───────────────────────────── */
 
 .current-content-description {
-    min-height: 100px;
-    max-height: 140px;
+    min-height: 80px;
+    max-height: 100px;
 
     margin-bottom: 18px;
 

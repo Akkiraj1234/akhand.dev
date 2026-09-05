@@ -96,9 +96,6 @@ img {
     }
 }
 
-
-
-
 .section-heading {
     max-width: 760px;
     margin-bottom: 40px;
@@ -147,9 +144,6 @@ img {
 
 
 
-
-
-
 .language-list {
     display: flex;
     flex-wrap: wrap;
@@ -167,7 +161,7 @@ img {
 
     padding: 3px 6px;
 
-    border: 1px solid transparent;
+    border: 1px solid;
     border-radius: 6px;
 
     background: transparent;
@@ -178,6 +172,11 @@ img {
     font-size: 0.64rem;
 
     white-space: nowrap;
+    border: 1px solid color-mix(
+        in srgb,
+        var(--line) 70%,
+        var(--soft)
+    );
 
     transition:
         border-color 150ms ease,
