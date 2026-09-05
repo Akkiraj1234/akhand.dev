@@ -75,18 +75,16 @@
 ───────────────────────────── */
 
 .current-content-description {
-    min-height: 80px;
-    max-height: 100px;
-
     margin-bottom: 18px;
-
-    overflow: hidden;
 }
 
 .current-content-description p {
     max-width: 680px;
+
     margin: 0;
+
     color: var(--muted);
+
     font-size: 0.84rem;
     line-height: 1.65;
 
@@ -97,12 +95,6 @@
     -webkit-line-clamp: 4;
 
     overflow: hidden;
-}
-
-.current-content-description.expanded {
-    max-height: none;
-
-    overflow: visible;
 }
 
 .current-content-description.expanded p {
