@@ -1,15 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import useSite from "@/hooks/useSite";
+import Heading from "@/components/Heading";
+import "./activitysection.css";
 
-import site from "../../../data/site";
-
-import {
-    getIntensity,
-    loadActivity,
-    mergeActivity,
-    summarizeActivity,
-} from "../../../services/activity";
-
-import Heading from "./Heading";
 
 import ActivityMonth from "../activity/ActivityMonth";
 import ActivityEmpty from "../activity/ActivityEmpty";
