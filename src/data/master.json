@@ -6,7 +6,15 @@
         "url": "https://akhand.dev",
         "title": "Software Developer",
         "description": "Software developer focused on backend engineering, software architecture, and building modular systems and practical tools.",
-        "github": "https://github.com/Akkiraj1234/akhand.dev"
+        "github": "https://github.com/Akkiraj1234/akhand.dev",
+        "social": {
+            "email": "akhandraj402@gmail.com",
+            "linkedin": "https://www.linkedin.com/in/akhandrajdev/",
+            "x": "",
+            "reddit": "",
+            "discord": "",
+            "instagram": ""
+        }
     },
     "profiles": {
         "github": {
@@ -28,14 +36,6 @@
             "enabled": true
         }
     },
-    "social": {
-        "email": "akhandraj402@gmail.com",
-        "linkedin": "https://www.linkedin.com/in/akhandrajdev/",
-        "x": "",
-        "reddit": "",
-        "discord": "",
-        "instagram": ""
-    },
     "hero": {
         "eyebrow": "AKHAND RAJ / SOFTWARE DEVELOPER",
         "title": "I build things that solve problems.",
@@ -43,168 +43,19 @@
         "ctaLabel": "See what I'm building",
         "ctaTarget": "#currently"
     },
-
-    "currently": {
-        "label": "Currently building",
-
-        "projects": [
-            {
-                "name": "shipyard",
-                "started_at": "2026-08-09",
-                "ended_at": null,
-
-                "description": "Shipyard is a repository-first project lifecycle companion that manages the information surrounding your source code. It organizes roadmaps, changelogs, ideas, tasks, and project metadata while integrating with existing tools instead of replacing them.",
-
-                "commits": 67,
-                "release_version": "v0.1",
-
-                "topics": [
-                    "Developer Tools",
-                    "Developer Productivity",
-                    "Project Management"
-                ],
-
-                "languages": {
-                    "Python": 72,
-                    "C++": 18,
-                    "JavaScript": 10
-                },
-
-                "star": 0,
-                "active_days": 45
-            },
-
-            {
-                "name": "akki-core-backend",
-                "started_at": "2026-06-18",
-                "ended_at": null,
-
-                "description": "akki-core-backend is a modular backend system for orchestrating data from multiple external services, delivering normalized, cached data and APIs that power all internal projects.",
-
-                "commits": 91,
-                "release_version": "v1.1",
-
-                "topics": [
-                    "Backend Development",
-                    "Plugin Architecture",
-                    "API Development"
-                ],
-
-                "languages": {
-                    "Python": 72,
-                    "C++": 18,
-                    "JavaScript": 10
-                },
-
-                "star": 0,
-                "active_days": 45
-            },
-
-            {
-                "name": "testpy",
-                "started_at": "2026-05-12",
-                "ended_at": null,
-
-                "description": "A terminal-based test runner focused on providing a clear interactive interface for running, exploring, and understanding Python test suites.",
-
-                "commits": 48,
-                "release_version": "v0.3",
-
-                "topics": [
-                    "Developer Tools",
-                    "Testing",
-                    "Terminal UI"
-                ],
-
-                "languages": {
-                    "Python": 84,
-                    "C": 10,
-                    "JavaScript": 6
-                },
-
-                "star": 0,
-                "active_days": 45
-            }
-        ]
-    },
- 
     "about": {
         "short": "I am Akhand Raj — Akki — a software developer focused on backend engineering, software architecture, and building modular systems.",
         "full": "I enjoy understanding how systems work, solving architectural problems, and turning complex ideas into clean, maintainable software. My path into software started with hands-on technical work, followed by teaching programming, software development, and backend engineering. I learn primarily by building real software, experimenting with different approaches, and understanding the trade-offs behind technical decisions. Outside software, I enjoy sketching, archery, chess, and exploring ideas beyond my usual technical interests."
     },
-    "projects": [
-        {
-            "name": "Shipyard",
-            "description": "An open-source project lifecycle companion for managing project metadata across planning, development, releases, and changelogs.",
-            "status": "In development",
-            "technologies": [
-                "Python",
-                "CLI",
-                "Software Architecture",
-                "System Design"
-            ],
-            "url": "https://github.com/Akkiraj1234/shipyard"
-        },
-        {
-            "name": "Testpy",
-            "description": "A unified terminal workspace for discovering, selecting, running, and monitoring tests across multiple languages and frameworks.",
-            "status": "In development",
-            "technologies": [
-                "Python",
-                "Testing",
-                "TUI",
-                "Developer Tooling"
-            ],
-            "url": "https://github.com/Akkiraj1234/Testpy"
-        },
-        {
-            "name": "akki-core-backend",
-            "description": "A modular backend for collecting, processing, caching, and serving data from multiple external services through a unified API.",
-            "status": "In development",
-            "technologies": [
-                "Python",
-                "Backend",
-                "SSE",
-                "Data Synchronization"
-            ],
-            "url": "https://github.com/Akkiraj1234/akki-core-backend"
-        },
-        {
-            "name": "Sanatan Video Gen 2",
-            "description": "A Python-based automated video generation system for creating customizable short-form content with dynamic text, subtitles, effects, transitions, and audio.",
-            "status": "Experiment",
-            "technologies": [
-                "Python",
-                "FFmpeg",
-                "Pillow",
-                "Automation"
-            ],
-            "url": "https://github.com/Akkiraj1234/sanatan-video-gen2"
-        },
-        {
-            "name": "PyStreamSaver",
-            "description": "A desktop application for downloading and managing online media streams.",
-            "status": "Project",
-            "technologies": [
-                "Python",
-                "Desktop",
-                "Media Processing"
-            ],
-            "url": "https://github.com/Akkiraj1234/PyStreamSaver"
-        },
-        {
-            "name": "BrainDump",
-            "description": "A structured developer learning repository containing programming concepts, tools, libraries, practical examples, and organized learning resources.",
-            "status": "Learning project",
-            "technologies": [
-                "Python",
-                "C++",
-                "Documentation",
-                "Learning"
-            ],
-            "url": "https://github.com/Akkiraj1234/brain_dump"
-        }
-    ],
+    "activity": {
+        "Ttms": 3600000,
+        "heatmap_month_to_show": 12,
+        "enabledSources": [
+            "github",
+            "leetcode",
+            "roadmap"
+        ]
+    },
     "philosophy": [
         {
             "title": "Understand the system",
@@ -221,24 +72,6 @@
         {
             "title": "Solve real problems",
             "description": "Most of my projects start with a practical problem and grow through experimentation and iteration."
-        }
-    ],
-    "currentlyInto": [
-        {
-            "label": "Currently building",
-            "value": "Shipyard / developer tooling"
-        },
-        {
-            "label": "Currently learning",
-            "value": "Backend engineering, networking and system design"
-        },
-        {
-            "label": "Currently exploring",
-            "value": "Modular architecture, testing tools and data synchronization"
-        },
-        {
-            "label": "Away from the keyboard",
-            "value": "Sketching, archery and chess"
         }
     ],
     "blog": [
@@ -280,20 +113,14 @@
             ]
         }
     ],
-    "activity": {
-        "enabledSources": [
-            "github",
-            "leetcode"
-        ],
-        "githubTtlMs": 3600000,
-        "leetcodeTtlMs": 21600000,
-        "weeksToShow": 52,
-        "githubTokenStorageKey": "GITHUB_TOKEN",
-        "proxyUrl": ""
-    },
     "askMe": {
         "title": "Ask me something.",
         "description": "Talk to me about software, backend systems, architecture, developer tools, projects, or how things work underneath the surface.",
         "unavailableLabel": "Contact details are being set up. Check back soon."
-    }
+    },
+    "currently": {
+        "label": "Currently building",
+        "projects": []
+    },
+    "projects": []
 }
