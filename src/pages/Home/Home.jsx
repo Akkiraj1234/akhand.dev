@@ -1,4 +1,5 @@
 import MainLayout from "@/layout/MainLayout";
+import SectionErrorBoundary from "@/components/SectionErrorBoundary";
 
 import Hero from "./Hero/Hero";
 import CurrentlySection from "./CurrentlySection/CurrentlySection";
@@ -17,7 +18,9 @@ function Home() {
         <MainLayout>
             <main id="home">
                 <Hero /> 
-                <CurrentlySection/>
+                <SectionErrorBoundary name="Current projects">
+                    <CurrentlySection/>
+                </SectionErrorBoundary>
             </main>
         </MainLayout>
     );

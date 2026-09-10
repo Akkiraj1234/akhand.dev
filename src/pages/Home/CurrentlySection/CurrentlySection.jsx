@@ -141,25 +141,50 @@ const CurrentContent = ({ project }) => {
 
 function CurrentlySection() {
     const currently = useSite("currently");
+    const bootstrap = useSite("bootstrap") ?? { status: "idle", error: null };
     const [selectedProject, setSelectedProject] = useState(0);
-    const project = currently.projects[selectedProject];
+
+    const projects = Array.isArray(currently?.projects) ? currently.projects : [];
+    const project = projects[selectedProject] ?? projects[0];
+
+    useEffect(() => {
+        if (selectedProject >= projects.length) {
+            setSelectedProject(0);
+        }
+    }, [projects.length, selectedProject]);
 
     return (
         <section id="currently" className="current-section container">
-            <Heading 
-                title={currently.label} 
+            <Heading
+                title={currently?.label ?? "Currently building"}
                 description="Projects I'm working on"
             />
 
-            <div className="current-layout">
-                <CurrentContent project={project}/>
+            {bootstrap.status === "error" && (
+                <p className="site-data-message" role="status">
+                    Live projects are temporarily unavailable. The rest of the site is still here.
+                </p>
+            )}
 
-                <CurrentProjects 
-                    data={currently}
-                    onClickFunc={setSelectedProject}
-                    currIdx={selectedProject}
-                />
-            </div>
+            {(bootstrap.status === "idle" || bootstrap.status === "loading") && (
+                <p className="site-data-message" role="status">Loading current projects…</p>
+            )}
+
+            {bootstrap.status === "ready" && !projects.length && (
+                <p className="site-data-message">No current projects have been published yet.</p>
+            )}
+
+            {project && (
+                <div className="current-layout">
+                    <CurrentContent project={project}/>
+
+                    <CurrentProjects
+                        data={{ projects }}
+                        onClickFunc={setSelectedProject}
+                        currIdx={selectedProject}
+                    />
+                </div>
+            )}
         </section>
     );
 }

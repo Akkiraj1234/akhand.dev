@@ -213,3 +213,14 @@ img {
     font-weight: 400;
     font-variant-numeric: tabular-nums;
 }
+
+.site-data-message {
+    margin: 0;
+    color: var(--muted);
+}
+
+.section-error {
+    width: min(calc(100% - 64px), 1200px);
+    margin: 48px auto;
+    color: var(--muted);
+}

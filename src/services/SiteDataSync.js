@@ -1,6 +1,6 @@
-// scripts/siteDataSync.js
 const fs = require("node:fs/promises");
 const path = require("node:path");
+const API_URL = process.env.SITE
 
 
 /* ============================================================
