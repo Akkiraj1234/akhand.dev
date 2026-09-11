@@ -77,33 +77,6 @@ function unwrapRecord(response) {
     return response?.record?.data?.data ?? response?.data ?? [];
 }
 
-function toLanguages(languages = []) {
-    const total = languages.reduce((sum, language) => sum + (Number(language?.size) || 0), 0);
-
-    return Object.fromEntries(
-        languages.map((language) => [
-            language.name,
-            total ? Math.round((Number(language.size) / total) * 100) : 0,
-        ])
-    );
-}
-
-function toProject(repository) {
-    return {
-        name: repository?.name ?? "Untitled project",
-        description: repository?.description ?? "No description is available yet.",
-        url: repository?.url ?? null,
-        commits: repository?.totalCommits ?? 0,
-        release_version: repository?.release?.tagName ?? null,
-        topics: Array.isArray(repository?.topics) ? repository.topics : [],
-        languages: toLanguages(repository?.languages),
-        star: repository?.stars ?? 0,
-        active_days: repository?.totalActiveDays ?? 0,
-        started_at: repository?.createdAt?.slice(0, 10) ?? null,
-        ended_at: null,
-    };
-}
-
 export async function initializeSite() {
     if (initialization) {
         return initialization;
@@ -117,40 +90,28 @@ export async function initializeSite() {
         const apiUrl = String(runtime["api-url"]).replace(/\/$/, "");
         
         let token = await getToken(apiUrl);
-
         const load = async () => Object.fromEntries(
             await Promise.all(Object.entries(runtime["site-config"]).map(
                 async ([key, path]) => [key, await request(apiUrl, path, token)]
             ))
         )
 
-        
-
-        
-
+        // if error 401 throw else crete a new jwt token
         let results;
         try {
             results = await load();
         } catch (error) {
-            // A cookie can outlive a revoked backend token. Retry once only in that case.
             if (error.status !== 401) throw error;
             clearToken();
             token = await createToken(apiUrl);
             results = await load();
         }
 
-        const [activeResponse, pinnedResponse] = results;
-        const activeRepos = unwrapRecord(activeResponse);
-        const pinnedRepos = unwrapRecord(pinnedResponse);
-        const projects = (Array.isArray(activeRepos) ? activeRepos : []).map(toProject);
-
-        site.put("activeRepos", activeRepos);
-        site.put("pinnedRepos", pinnedRepos);
-        site.put("currently", {
-            label: "Currently building",
-            projects,
-        });
+        for ({config_name, response} of results) {
+            site.put(config_name, unwrapRecord(response));
+        }
         site.put("bootstrap", { status: "ready", error: null });
+
     })().catch((error) => {
         site.put("bootstrap", {
             status: "error",
