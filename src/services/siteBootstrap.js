@@ -1,123 +1,147 @@
+import { startService, load_cached_data } from "@/services/runtimeDataService";
+import { getCookie, tokenIsUsable } from "@/services/utils"
 import site from "@/data/site";
 
 const TOKEN_COOKIE = "akhand.dev_init_token";
-const REFRESH_BUFFER_SECONDS = 60;
-let initialization = null;
+const REFRESH_BUFFER_SECONDS = 30;
+let bootstrapInFlight = null;
 
 
-function getCookie(name) {
-    const prefix = `${encodeURIComponent(name)}=`;
 
-    return document.cookie
-        .split("; ")
-        .find((entry) => entry.startsWith(prefix))
-        ?.slice(prefix.length) ?? null;
-}
-
-function tokenIsUsable(token) {
-    try {
-        const payload = JSON.parse(
-            atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))
-        );
-
-        return Number(payload.exp) > (Date.now() / 1000) + REFRESH_BUFFER_SECONDS;
-    } catch {
-        return false;
-    }
+function apiUrl() {
+    return String(site.get("runtime")?.["api-url"] ?? "https://api.akhand.dev")
+        .replace(/\/$/, "");
 }
 
 function saveToken(token) {
     const secure = location.protocol === "https:" ? "; Secure" : "";
-    document.cookie = `${encodeURIComponent(TOKEN_COOKIE)}=${token}; Path=/; Max-Age=3540; SameSite=Lax${secure}`;
+    document.cookie =
+        `${encodeURIComponent(TOKEN_COOKIE)}=${encodeURIComponent(token)}; ` +
+        `Path=/; Max-Age=3540; SameSite=Lax${secure}`;
 }
+
 
 function clearToken() {
-    document.cookie = `${encodeURIComponent(TOKEN_COOKIE)}=; Path=/; Max-Age=0; SameSite=Lax`;
+    const secure = location.protocol === "https:" ? "; Secure" : "";
+    document.cookie =
+        `${encodeURIComponent(TOKEN_COOKIE)}=; Path=/; Max-Age=0; SameSite=Lax${secure}`;
 }
 
-async function createToken(apiUrl) {
-    const response = await fetch(`${apiUrl}/init`, { method: "POST" });
-    const body = await response.json().catch(() => null);
 
-    if (!response.ok || !body?.ok || !body.token) {
-        throw new Error(body?.message ?? "Could not initialize site data.");
+async function createToken() {
+    try {
+        const response = await fetch(`${apiUrl()}/init`, { method: "POST" });
+        const body = await response.json().catch(() => null);
+        
+        if (!response.ok || !body?.ok || !body.token) {
+            console.error("Failed to initialize site data:", {
+                status: response.status,
+                statusText: response.statusText,
+                body,
+            });
+
+            throw new Error(
+                body?.message ?? "Could not initialize live site data."
+            );
+        }
+
+        saveToken(body.token);
+        return body.token;
+
+    } catch (error) {
+        console.error("Site initialization failed:", error);
+        throw error;
     }
-
-    saveToken(body.token);
-    return body.token;
 }
 
-async function getToken(apiUrl) {
-    const saved = getCookie(TOKEN_COOKIE);
 
-    if (saved && tokenIsUsable(saved)) {
-        return saved;
+async function getValidToken({ forceRefresh = false } = {}) {
+    const cachedToken = forceRefresh ? null : getCookie(TOKEN_COOKIE);
+
+    if (cachedToken && tokenIsUsable(cachedToken)) {
+        return cachedToken;
     }
 
     clearToken();
-    return createToken(apiUrl);
+
+    if (!tokenRefreshInFlight) {
+        tokenRefreshInFlight = createToken().finally(() => {
+            tokenRefreshInFlight = null;
+        });
+    }
+
+    return tokenRefreshInFlight;
 }
 
-async function request(apiUrl, path, token) {
-    const response = await fetch(`${apiUrl}${path}`, {
-        headers: { Authorization: `Bearer ${token}` },
+
+function responseError(response, body, path) {
+    const error = new Error(body?.message ?? `Could not load ${path}.`);
+    error.status = response.status;
+    return error;
+}
+
+
+// Runtime fetchers receive this, not a JWT/header getter. It owns JWT state,
+// authorization headers, JSON parsing, and one safe 401 retry.
+async function request(path, options = {}, retried = false) {
+
+    const token = await getValidToken();
+    const response = await fetch(`${apiUrl()}${path}`, {
+        ...options,
+        headers: {
+            ...options.headers,
+            Authorization: `Bearer ${token}`,
+        },
     });
     const body = await response.json().catch(() => null);
 
+    if (response.status === 401 && !retried) {
+        await getValidToken({ forceRefresh: true });
+        return request(path, options, true);
+    }
+
     if (!response.ok || !body?.ok) {
-        const error = new Error(body?.message ?? `Could not load ${path}.`);
-        error.status = response.status;
-        throw error;
+        throw responseError(response, body, path);
     }
 
     return body;
 }
 
-function unwrapRecord(response) {
-    return response?.record?.data?.data ?? response?.data ?? [];
+
+function bootstrap() {
+    /*
+    1. load the cashed data ( 
+        if data is undefined or null then it will show loading, 
+        if data then its load the data, 
+        if error then show failed to fatch and error message )
+    2. start the all services
+
+    note: at refresh its try load cash and then start the service
+        when refreshed again its again load cash load, and load from cash
+        then after its start service again but its lazy reload
+        the jwt token only get refreshed when its invalid bootstrap 
+        has no effect on jwt token and it will fatch all data from server again
+        on refresh
+    */
+    if (bootstrapInFlight) return bootstrapInFlight;
+    
+    bootstrapInFlight = ( () => {
+        load_cached_data()
+
+        start_service({
+            request,
+            save_cash: save_cached_data,
+        });
+    
+    })().finally(() => {
+        bootstrapInFlight = null;
+    })
+
+    return bootstrapInFlight;
 }
 
-export async function initializeSite() {
-    if (initialization) {
-        return initialization;
-    }
-
-    initialization = (async () => {
-
-        // setting status to be loading for the site
-        site.put("bootstrap", { status: "loading", error: null });
-        const runtime = site.get("runtime") ?? {};
-        const apiUrl = String(runtime["api-url"]).replace(/\/$/, "");
-        
-        let token = await getToken(apiUrl);
-        const load = async () => Object.fromEntries(
-            await Promise.all(Object.entries(runtime["site-config"]).map(
-                async ([key, path]) => [key, await request(apiUrl, path, token)]
-            ))
-        )
-
-        // if error 401 throw else crete a new jwt token
-        let results;
-        try {
-            results = await load();
-        } catch (error) {
-            if (error.status !== 401) throw error;
-            clearToken();
-            token = await createToken(apiUrl);
-            results = await load();
-        }
-
-        for ({config_name, response} of results) {
-            site.put(config_name, unwrapRecord(response));
-        }
-        site.put("bootstrap", { status: "ready", error: null });
-
-    })().catch((error) => {
-        site.put("bootstrap", {
-            status: "error",
-            error: error instanceof Error ? error.message : "Could not load live site data.",
-        });
-    });
-
-    return initialization;
+export default bootstrap;
+export {
+    bootstrap,
+    request
 }

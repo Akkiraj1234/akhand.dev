@@ -1,10 +1,10 @@
 import Home from "@/pages/Home/Home";
 import { useEffect } from "preact/hooks";
-import { initializeSite } from "@/services/siteBootstrap";
+import { bootstrap } from "@/services/siteBootstrap";
 
 export default function App() {
     useEffect(() => {
-        initializeSite();
+        bootstrap();
     }, []);
 
     return <Home />;

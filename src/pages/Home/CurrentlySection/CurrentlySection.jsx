@@ -166,6 +166,12 @@ function CurrentlySection() {
                 </p>
             )}
 
+            {bootstrap.status === "stale" && (
+                <p className="site-data-message" role="status">
+                    Showing saved project data. Could not check for updates right now.
+                </p>
+            )}
+
             {(bootstrap.status === "idle" || bootstrap.status === "loading") && (
                 <p className="site-data-message" role="status">Loading current projects…</p>
             )}
