@@ -1,90 +1,104 @@
+import { getCookie } from "@/services/utils";
 import site from "@/data/site";
 
-
-
-
-
-
-
-
-
 const CACHE_KEY = "akhand.dev:runtime-data";
-let tokenRefreshInFlight = null;
+const CACHE_COOKIE_KEY = "akhand.dev_runtime_data";
+const DEFAULT_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+let refreshTimer = null;
+let isServiceActive = false;
 
-function loadCachedData() {
+function getRefreshIntervalMs() {
+    const runtime = site.get("runtime") ?? {};
+    const interval = Number(
+        runtime["refresh-interval"] ?? runtime.refreshInterval ?? runtime.interval
+    );
+
+    return Number.isFinite(interval) && interval > 0
+        ? interval
+        : DEFAULT_REFRESH_INTERVAL_MS;
+}
+
+function writeCacheCookie(data) {
+    try {
+        const secure = location.protocol === "https:" ? "; Secure" : "";
+        const cookieValue = encodeURIComponent(JSON.stringify(data));
+
+        document.cookie =
+            `${encodeURIComponent(CACHE_COOKIE_KEY)}=${cookieValue}; ` +
+            `Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
+    } catch {
+        // Cookie storage can fail in restricted environments.
+    }
+}
+
+function loadCachedDataFromCookie() {
+    const cookie = getCookie(CACHE_COOKIE_KEY);
+
+    if (!cookie) return null;
+
+    try {
+        return JSON.parse(cookie);
+    } catch {
+        return null;
+    }
+}
+
+function loadCachedDataFromStorage() {
     try {
         const saved = JSON.parse(localStorage.getItem(CACHE_KEY) ?? "null");
 
-        if (!Array.isArray(saved?.entries)) return false;
+        if (!Array.isArray(saved?.entries)) return null;
 
-        for (const { key, value } of saved.entries) {
-            site.put(key, value);
-        }
-
-        return saved.entries.some(({ key }) => key === "currently");
+        return saved;
     } catch {
-        return false;
+        return null;
     }
 }
 
 function load_cached_data() {
-    const cookie = getCookie(CACHED_DATA);
+    const cachedValue = loadCachedDataFromCookie() ?? loadCachedDataFromStorage();
 
-    if (!cookie) return;
+    if (!cachedValue?.entries) return false;
 
-    try {
-        const data = JSON.parse(cookie);
-
-        for (const { key, data: value } of data.entries) {
-            if (!value) continue;
-
+    for (const { key, value } of cachedValue.entries) {
+        if (key && value !== undefined) {
             site.put(key, value);
         }
-    } catch {
-        return;
     }
+
+    return cachedValue.entries.some(({ key }) => key === "currently");
 }
 
-function saveCachedData(entries) {
+function saveCachedData(entries = []) {
+    const payload = {
+        savedAt: new Date().toISOString(),
+        entries,
+    };
+
     try {
-        const existing = JSON.parse(localStorage.getItem(CACHE_KEY) ?? "null");
-        const merged = new Map(
-            Array.isArray(existing?.entries)
-                ? existing.entries.map(({ key, value }) => [key, value])
-                : []
-        );
-
-        for (const { key, value } of entries) {
-            merged.set(key, value);
-        }
-
-        localStorage.setItem(CACHE_KEY, JSON.stringify({
-            savedAt: new Date().toISOString(),
-            entries: [...merged.entries()].map(([key, value]) => ({ key, value })),
-        }));
+        localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
     } catch {
         // Storage can be unavailable or full; fresh in-memory data still works.
     }
+
+    writeCacheCookie(payload);
 }
 
+function scheduleNextRefresh({ request, saveCachedDataFn = saveCachedData }) {
+    if (!isServiceActive) return;
 
+    if (refreshTimer) {
+        clearTimeout(refreshTimer);
+    }
 
+    refreshTimer = setTimeout(() => {
+        refreshTimer = null;
 
+        if (!isServiceActive) return;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        startService({ request, saveCachedData: saveCachedDataFn });
+    }, getRefreshIntervalMs());
+}
 
 function unwrap(response) {
     return response?.record?.data?.data ?? response?.data ?? [];
@@ -117,7 +131,9 @@ function toProject(repository) {
 
 // This service receives request(), not a JWT/header getter. It deliberately
 // knows nothing about authentication, expiry, or retry rules.
-export async function startService({ request, saveCachedData }) {
+export async function startService({ request, saveCachedData: saveCachedDataFn = saveCachedData }) {
+    isServiceActive = true;
+
     const runtime = site.get("runtime") ?? {};
     const routes = runtime["site-config"] ?? {};
     const activePath = `/${routes.currently ?? "github/activerepo"}`;
@@ -148,7 +164,14 @@ export async function startService({ request, saveCachedData }) {
         cachedEntries.push({ key: "pinnedRepos", value: repositories });
     }
 
-    if (cachedEntries.length) saveCachedData(cachedEntries);
+    if (cachedEntries.length) {
+        saveCachedDataFn(cachedEntries);
+    }
+
+    scheduleNextRefresh({
+        request,
+        saveCachedDataFn,
+    });
 
     return {
         activeRepos: activeRepos.status === "fulfilled"
@@ -159,3 +182,14 @@ export async function startService({ request, saveCachedData }) {
             : { ok: false, error: pinnedRepos.reason },
     };
 }
+
+export function stopService() {
+    isServiceActive = false;
+
+    if (refreshTimer) {
+        clearTimeout(refreshTimer);
+        refreshTimer = null;
+    }
+}
+
+export { load_cached_data, loadCachedDataFromCookie, loadCachedDataFromStorage, saveCachedData };

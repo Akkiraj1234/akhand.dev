@@ -3,7 +3,7 @@ import { getCookie, tokenIsUsable } from "@/services/utils"
 import site from "@/data/site";
 
 const TOKEN_COOKIE = "akhand.dev_init_token";
-const REFRESH_BUFFER_SECONDS = 30;
+let tokenRefreshInFlight = null;
 let bootstrapInFlight = null;
 
 
@@ -63,7 +63,7 @@ async function getValidToken({ forceRefresh = false } = {}) {
     }
 
     clearToken();
-
+    
     if (!tokenRefreshInFlight) {
         tokenRefreshInFlight = createToken().finally(() => {
             tokenRefreshInFlight = null;
@@ -81,30 +81,47 @@ function responseError(response, body, path) {
 }
 
 
-// Runtime fetchers receive this, not a JWT/header getter. It owns JWT state,
-// authorization headers, JSON parsing, and one safe 401 retry.
-async function request(path, options = {}, retried = false) {
-
+async function request(path, { method = "GET", headers = {}, body, query } = {}, retried = false) {
+    /*
+    Runtime fetchers receive this, not a JWT/header getter. It owns JWT state,
+    authorization headers, JSON parsing, and one safe 401 retry.
+    */
     const token = await getValidToken();
-    const response = await fetch(`${apiUrl()}${path}`, {
-        ...options,
-        headers: {
-            ...options.headers,
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    const body = await response.json().catch(() => null);
+    const url = new URL(`${apiUrl()}${path}`);
 
+    Object.entries(query ?? {}).forEach(([key, value]) => {
+        if (value != null) {
+            url.searchParams.set(key, value);
+        }
+    });
+
+    const response = await fetch(url, {
+        method,
+        headers: {
+            ...headers,
+            Authorization: `Bearer ${token}`,
+            ...(body != null && {
+                "Content-Type": "application/json",
+            }),
+        },
+        ...(body != null && {
+            body: JSON.stringify(body),
+        }),
+    });
+    
+    const data = await response.json().catch(() => null);
+
+    // Retry once after refreshing the token.
     if (response.status === 401 && !retried) {
         await getValidToken({ forceRefresh: true });
-        return request(path, options, true);
+        return request(path, { method, headers, body, query }, true);
     }
 
-    if (!response.ok || !body?.ok) {
-        throw responseError(response, body, path);
+    if (!response.ok || !data?.ok) {
+        throw responseError(response, data, path);
     }
 
-    return body;
+    return data;
 }
 
 
@@ -125,14 +142,27 @@ function bootstrap() {
     */
     if (bootstrapInFlight) return bootstrapInFlight;
     
-    bootstrapInFlight = ( () => {
-        load_cached_data()
+    bootstrapInFlight = ( async () => {
+        const hasCachedData = await load_cached_data();
 
-        start_service({
-            request,
-            save_cash: save_cached_data,
+        site.put("bootstrap", {
+            status: hasCachedData ? "stale" : "loading",
+            error: null,
         });
-    
+
+        const result = await startService({
+            request
+        });
+
+        const hasLiveData = result.activeRepos.ok || result.pinnedRepos.ok;
+
+        site.put("bootstrap", {
+            status: hasLiveData ? "ready" : (hasCachedData ? "stale" : "error"),
+            error: hasLiveData ? null : {
+                activeRepos: result.activeRepos.error ?? null,
+                pinnedRepos: result.pinnedRepos.error ?? null,
+            },
+        });
     })().finally(() => {
         bootstrapInFlight = null;
     })
@@ -141,7 +171,4 @@ function bootstrap() {
 }
 
 export default bootstrap;
-export {
-    bootstrap,
-    request
-}
+export { bootstrap, request }
