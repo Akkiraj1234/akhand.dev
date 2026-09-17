@@ -9,11 +9,24 @@ let bootstrapInFlight = null;
 
 
 function apiUrl() {
+    /*
+    Return the configured API base URL.
+
+    Uses the runtime configuration when available and falls back to the
+    default API endpoint. Trailing slashes are removed so callers can safely
+    append API paths.
+    */
     return String(site.get("runtime")?.["api-url"] ?? "https://api.akhand.dev")
         .replace(/\/$/, "");
 }
 
 function saveToken(token) {
+    /*
+    Store the initialization JWT in the site cookie.
+
+    The token is scoped to the entire site, expires automatically, and uses
+    the Secure attribute when the site is served over HTTPS.
+    */
     const secure = location.protocol === "https:" ? "; Secure" : "";
     document.cookie =
         `${encodeURIComponent(TOKEN_COOKIE)}=${encodeURIComponent(token)}; ` +
@@ -21,13 +34,40 @@ function saveToken(token) {
 }
 
 function clearToken() {
+    /*
+    Remove the stored initialization JWT.
+
+    The cookie is expired immediately so the next authenticated request
+    will create a new token.
+    */
     const secure = location.protocol === "https:" ? "; Secure" : "";
     document.cookie =
         `${encodeURIComponent(TOKEN_COOKIE)}=; Path=/; Max-Age=0; SameSite=Lax${secure}`;
 }
 
+function responseError(response, body, path) {
+    /*
+    Create a normalized API error from a failed response.
+
+    Uses the server-provided message when available and attaches the HTTP
+    status code to the error for callers that need to inspect the failure.
+    */
+    const error = new Error(body?.message ?? `Could not load ${path}.`);
+    error.status = response.status;
+    return error;
+}
+
 
 async function createToken() {
+    /*
+    Create a new initialization JWT.
+
+    Requests a token from the API initialization endpoint, validates the
+    response, stores the token in the site cookie, and returns it.
+
+    Throws when the initialization request fails or the API response does
+    not contain a valid token.
+    */
     try {
         const response = await fetch(`${apiUrl()}/init`, { method: "POST" });
         const body = await response.json().catch(() => null);
@@ -55,6 +95,15 @@ async function createToken() {
 
 
 async function getValidToken({ forceRefresh = false } = {}) {
+    /*
+    Return a usable initialization JWT.
+
+    Reuses the stored token when it is valid. When the token is missing,
+    expired, or a refresh is explicitly requested, creates a new token.
+
+    Concurrent refresh requests share the same in-flight promise so only
+    one token initialization request is made at a time.
+    */
     const cachedToken = forceRefresh ? null : getCookie(TOKEN_COOKIE);
 
     if (cachedToken && tokenIsUsable(cachedToken)) {
@@ -73,17 +122,19 @@ async function getValidToken({ forceRefresh = false } = {}) {
 }
 
 
-function responseError(response, body, path) {
-    const error = new Error(body?.message ?? `Could not load ${path}.`);
-    error.status = response.status;
-    return error;
-}
-
-
 async function request(path, { method = "GET", headers = {}, body, query } = {}, retried = false) {
     /*
-    Runtime fetchers receive this, not a JWT/header getter. It owns JWT state,
-    authorization headers, JSON parsing, and one safe 401 retry.
+    Make an authenticated request to the runtime API.
+
+    Adds the current initialization JWT to the request, serializes JSON
+    request bodies, applies query parameters, and parses the API response.
+
+    A 401 response causes the token to be refreshed and the request to be
+    retried once. Other unsuccessful responses are converted into normalized
+    errors.
+
+    This function is the request interface exposed to runtime data services;
+    callers do not need to manage JWTs or authorization headers themselves.
     */
     const token = await getValidToken();
     const url = new URL(`${apiUrl()}${path}`);
@@ -125,83 +176,82 @@ async function request(path, { method = "GET", headers = {}, body, query } = {},
 
 
 function bootstrap() {
-   /*
+    /*
     Bootstrap process:
 
     1. Load cached data.
-       - If cached data exists, load it immediately and mark the data as stale.
-       - If no cached data exists, show the loading state.
-       - Cached data allows the site to render while fresh data is being fetched.
+       - load_cached_data() returns true when cached data was restored,
+         otherwise false.
+       - When cached data exists, the site can immediately display it.
+       - When no cached data exists, the site enters the loading state.
+       - Cached data is considered old until fresh data is fetched.
 
     2. Start all services.
-       - Services fetch the latest data from the server.
-       - Once the live data is available, replace the cached data with it.
-       - If fetching fails, keep the cached data when available and expose
-         the service errors.
+       - startService() returns true when fresh data was successfully fetched,
+         otherwise false.
+       - When fresh data is available, the cached data is replaced with the
+         latest data.
+       - When fetching fails, cached data remains available when it exists.
+       - When both cached and fresh data are unavailable, the site enters
+         the error state.
 
     Refresh behavior:
 
-    On every page refresh, bootstrap starts again.
-    It first attempts to restore cached data, then starts the services
+    Bootstrap runs again on every page refresh.
+    It first restores cached data, if available, and then starts the services
     to fetch fresh data from the server.
 
-    This means cached data is used as the initial state while the live
-    data is refreshed in the background.
+    This allows the site to display cached data immediately instead of waiting
+    for the network request to complete. The cached data remains marked as old
+    until fresh data is successfully fetched.
 
     Bootstrap does not manage the JWT token.
-    Token refresh is handled by the authentication layer and only occurs
-    when the current token is invalid or needs to be refreshed.
+    JWT refresh is handled by the authentication layer and only occurs when
+    the current token is invalid or requires refreshing.
 
     Bootstrap state:
 
-    site-load-status
-        "loading" → waiting for initial data when no cache is available.
-        "ready"   → fresh data has been successfully loaded.
-        "error"   → no usable data is available and the fetch failed.
+    site-load-status:
+        "loading" → no cached data is available and fresh data is being fetched.
+        "ready"   → usable data is available, either cached or freshly fetched.
+        "error"   → neither cached nor fresh data is available.
 
-    error
-        Contains service errors when one or more services fail.
+    site-data-status:
+        "old"   → the currently displayed data came from the cache.
+        "new"   → the currently displayed data came from a fresh server fetch.
+        "error" → the fresh data fetch failed.
 
-    data
-        The currently available data. Cached data may be displayed while
-        the live data is being fetched and is replaced when fresh data arrives.
+    data:
+        Contains the currently available data or an error when fresh data
+        could not be fetched and no cached data is available.
     */
+
     if (bootstrapInFlight) return bootstrapInFlight;
-    
-    bootstrapInFlight = ( async () => {
+
+    bootstrapInFlight = (async () => {
+        const runtime_data = site.get("runtime");
         const hasCachedData = await load_cached_data();
-        
-        // a boootstrap info is just normal info that if boostrap happen or not
-        site.put("bootstrap", {
+
+        site.put("runtime", {
+            ...runtime_data,
             "site-load-status": hasCachedData ? "ready" : "loading",
-            "site-update": "old" ,
+            "site-data-status": "old",
             data: null,
         });
 
         const result = await startService({
-            request
+            request,
         });
 
-        // but then how site gonna know if 
-        site.put("bootstrap", {
-            "site-load-status": result.status === 200 ? "ready" : "error",
-            "site-update": "old" ,
-            data: null,
-        })
-
-        const hasLiveData = result.activeRepos.ok || result.pinnedRepos.ok;
-
-        site.put("bootstrap", {
-            status: hasLiveData ? "ready" : (hasCachedData ? "stale" : "error"),
-            error: hasLiveData ? null : {
-                activeRepos: result.activeRepos.error ?? null,
-                pinnedRepos: result.pinnedRepos.error ?? null,
-            },
+        site.put("runtime", {
+            ...runtime_data,
+            "site-load-status": (result || hasCachedData) ? "ready" : "error",
+            "site-data-status": result ? "new" : "error",
+            data: result ? null : { message: "unable to fetch data" },
         });
-
     })().finally(() => {
         bootstrapInFlight = null;
-    })
+    });
 
     return bootstrapInFlight;
 }

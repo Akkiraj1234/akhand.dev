@@ -75,11 +75,15 @@
     },
     
     "currently": {
-        "site-load-status": "wait"
+        "site-load-status": null,
+        "site-data-status": null,
+        "data": null
     },
 
     "feature-repo": {
-        "site-load-status": "wait"
+        "site-load-status": null,
+        "site-data-status": null,
+        "data": null
     },
 
     "runtime": {
@@ -89,6 +93,9 @@
         },
         "weeksToShow": 52,
         "api-url": "https://api.akhand.dev/",
-        "refresh-interval": 300000
+        "refresh-interval": 300000,
+        "site-load-status": null,
+        "site-data-status": null,
+        "data": null
     }
 }

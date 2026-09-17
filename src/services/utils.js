@@ -27,7 +27,4 @@ function tokenIsUsable(token) {
 }
 
 
-export {
-    getCookie,
-    tokenIsUsable
-}
+export { getCookie, tokenIsUsable }
