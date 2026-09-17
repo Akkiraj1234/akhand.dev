@@ -1,4 +1,4 @@
-import { startService, load_cached_data } from "@/services/runtimeDataService";
+import { startService, load_cached_data } from "@/services/dataServices";
 import { getCookie, tokenIsUsable } from "@/services/utils"
 import site from "@/data/site";
 

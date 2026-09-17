@@ -80,6 +80,12 @@
         "data": null
     },
 
+    "heatmap": {
+        "site-load-status": null,
+        "site-data-status": null,
+        "data": null
+    },
+
     "feature-repo": {
         "site-load-status": null,
         "site-data-status": null,
@@ -89,7 +95,8 @@
     "runtime": {
         "site-config": {
             "currently": "github/activerepo",
-            "feature-repo": "database/github.pinnedrepo"
+            "feature-repo": "database/github.pinnedrepo",
+            "heatmap": "gernal/heatmap"
         },
         "weeksToShow": 52,
         "api-url": "https://api.akhand.dev/",

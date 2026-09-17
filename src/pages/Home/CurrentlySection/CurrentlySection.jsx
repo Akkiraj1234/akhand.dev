@@ -140,10 +140,12 @@ const CurrentContent = ({ project }) => {
 };
 
 function CurrentlySection() {
-    const currently = useSite("currently");
-    const bootstrap = useSite("bootstrap") ?? { status: "idle", error: null };
+    const currentlyRecord = useSite("currently");
     const [selectedProject, setSelectedProject] = useState(0);
 
+    const currently = currentlyRecord?.data;
+    const loadStatus = currentlyRecord?.["site-load-status"] ?? "loading";
+    const dataStatus = currentlyRecord?.["site-data-status"];
     const projects = Array.isArray(currently?.projects) ? currently.projects : [];
     const project = projects[selectedProject] ?? projects[0];
 
@@ -160,23 +162,23 @@ function CurrentlySection() {
                 description="Projects I'm working on"
             />
 
-            {bootstrap.status === "error" && (
+            {loadStatus === "error" && (
                 <p className="site-data-message" role="status">
                     Live projects are temporarily unavailable. The rest of the site is still here.
                 </p>
             )}
 
-            {bootstrap.status === "stale" && (
+            {loadStatus === "ready" && dataStatus === "error" && (
                 <p className="site-data-message" role="status">
                     Showing saved project data. Could not check for updates right now.
                 </p>
             )}
 
-            {(bootstrap.status === "idle" || bootstrap.status === "loading") && (
+            {loadStatus === "loading" && (
                 <p className="site-data-message" role="status">Loading current projects…</p>
             )}
 
-            {bootstrap.status === "ready" && !projects.length && (
+            {loadStatus === "ready" && !projects.length && (
                 <p className="site-data-message">No current projects have been published yet.</p>
             )}
 

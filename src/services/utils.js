@@ -42,5 +42,29 @@ function tokenIsUsable(token) {
     }
 }
 
+function toLanguages(languages = []) {
+    const total = languages.reduce((sum, language) => sum + (Number(language?.size) || 0), 0);
 
-export { getCookie, tokenIsUsable }
+    return Object.fromEntries(languages.map((language) => [
+        language.name,
+        total ? Math.round((Number(language.size) / total) * 100) : 0,
+    ]));
+}
+
+function toProject(repository) {
+    return {
+        name: repository?.name ?? "Untitled project",
+        description: repository?.description ?? "No description is available yet.",
+        url: repository?.url ?? null,
+        commits: repository?.totalCommits ?? 0,
+        release_version: repository?.release?.tagName ?? null,
+        topics: Array.isArray(repository?.topics) ? repository.topics : [],
+        languages: toLanguages(repository?.languages),
+        star: repository?.stars ?? 0,
+        active_days: repository?.totalActiveDays ?? 0,
+        started_at: repository?.createdAt?.slice(0, 10) ?? null,
+        ended_at: null,
+    };
+}
+
+export { getCookie, tokenIsUsable, toProject }

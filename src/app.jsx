@@ -1,7 +1,7 @@
 import Home from "@/pages/Home/Home";
 import { useEffect } from "preact/hooks";
 import { bootstrap } from "@/services/siteBootstrap";
-import { stopService } from "@/services/runtimeDataService";
+import { stopService } from "@/services/dataServices";
 
 export default function App() {
     useEffect(() => {
