@@ -20,7 +20,6 @@ function saveToken(token) {
         `Path=/; Max-Age=3540; SameSite=Lax${secure}`;
 }
 
-
 function clearToken() {
     const secure = location.protocol === "https:" ? "; Secure" : "";
     document.cookie =
@@ -126,33 +125,69 @@ async function request(path, { method = "GET", headers = {}, body, query } = {},
 
 
 function bootstrap() {
-    /*
-    1. load the cashed data ( 
-        if data is undefined or null then it will show loading, 
-        if data then its load the data, 
-        if error then show failed to fatch and error message )
-    2. start the all services
+   /*
+    Bootstrap process:
 
-    note: at refresh its try load cash and then start the service
-        when refreshed again its again load cash load, and load from cash
-        then after its start service again but its lazy reload
-        the jwt token only get refreshed when its invalid bootstrap 
-        has no effect on jwt token and it will fatch all data from server again
-        on refresh
+    1. Load cached data.
+       - If cached data exists, load it immediately and mark the data as stale.
+       - If no cached data exists, show the loading state.
+       - Cached data allows the site to render while fresh data is being fetched.
+
+    2. Start all services.
+       - Services fetch the latest data from the server.
+       - Once the live data is available, replace the cached data with it.
+       - If fetching fails, keep the cached data when available and expose
+         the service errors.
+
+    Refresh behavior:
+
+    On every page refresh, bootstrap starts again.
+    It first attempts to restore cached data, then starts the services
+    to fetch fresh data from the server.
+
+    This means cached data is used as the initial state while the live
+    data is refreshed in the background.
+
+    Bootstrap does not manage the JWT token.
+    Token refresh is handled by the authentication layer and only occurs
+    when the current token is invalid or needs to be refreshed.
+
+    Bootstrap state:
+
+    site-load-status
+        "loading" → waiting for initial data when no cache is available.
+        "ready"   → fresh data has been successfully loaded.
+        "error"   → no usable data is available and the fetch failed.
+
+    error
+        Contains service errors when one or more services fail.
+
+    data
+        The currently available data. Cached data may be displayed while
+        the live data is being fetched and is replaced when fresh data arrives.
     */
     if (bootstrapInFlight) return bootstrapInFlight;
     
     bootstrapInFlight = ( async () => {
         const hasCachedData = await load_cached_data();
-
+        
+        // a boootstrap info is just normal info that if boostrap happen or not
         site.put("bootstrap", {
-            status: hasCachedData ? "stale" : "loading",
-            error: null,
+            "site-load-status": hasCachedData ? "ready" : "loading",
+            "site-update": "old" ,
+            data: null,
         });
 
         const result = await startService({
             request
         });
+
+        // but then how site gonna know if 
+        site.put("bootstrap", {
+            "site-load-status": result.status === 200 ? "ready" : "error",
+            "site-update": "old" ,
+            data: null,
+        })
 
         const hasLiveData = result.activeRepos.ok || result.pinnedRepos.ok;
 
@@ -163,6 +198,7 @@ function bootstrap() {
                 pinnedRepos: result.pinnedRepos.error ?? null,
             },
         });
+
     })().finally(() => {
         bootstrapInFlight = null;
     })
