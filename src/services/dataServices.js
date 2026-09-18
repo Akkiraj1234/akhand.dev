@@ -1,31 +1,43 @@
-import { getCookie, toProject } from "@/services/utils";
+import {
+    currently_formater,
+    featureRepo_formater,
+    heatmap_formater,
+    getCookie,
+} from "@/services/utils";
 import site from "@/data/site";
+
 
 const CACHE_KEY = "akhand.dev:runtime-data";
 const CACHE_COOKIE_KEY = "akhand.dev_runtime_data";
 const DEFAULT_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
-const MIN_RETRY_INTERVAL_MS = 30 * 1000;
+
+const FORMATTERS = {
+    currently: currently_formater,
+    "feature-repo": featureRepo_formater,
+    heatmap: heatmap_formater,
+};
+
 
 let refreshTimer = null;
 let isServiceActive = false;
 let fetchedData = [];
 
-/**
- * Extract usable data from a validated API response. The backend contracts
- * define `{ data, error, code }`; the routes return `{ ok: true, data }`,
- * which `request()` validates before this function runs. Record-shaped
- * responses are supported for compatibility.
- *
- * @param {object} response A validated response returned by `request()`.
- * @returns {*} The route payload.
- * @throws {Error|object} When the response is invalid, failed, or has no data.
- */
+
+
 function unwrap(response) {
+    /*
+    Extract usable data from a validated API response. The backend contracts
+    define `{ data, error, code }`; the routes return `{ ok: true, data }`,
+    which `request()` validates before this function runs. Record-shaped
+    responses are supported for compatibility.
+    */
     if (!response || typeof response !== "object") {
         throw new Error("Invalid service response.");
     }
 
+    // Handle errors raised while fetching or processing the request.
     if (response.error != null) throw response.error;
+    // Handle errors returned by the server.
     if (response.record?.data?.error != null) throw response.record.data.error;
 
     const data = response.record?.data?.data ?? response.data;
@@ -34,32 +46,12 @@ function unwrap(response) {
     return data;
 }
 
-/**
- * Convert route payloads to the shape consumed by their site-store key.
- * `github/activerepo` returns repository records, while the Currently section
- * displays a labelled object containing normalized projects.
- *
- * @param {string} key Site-store key.
- * @param {*} data Raw route payload.
- * @returns {*} Data ready for the matching component.
- */
-function formatRouteData(key, data) {
-    if (key === "currently") {
-        return {
-            label: "Currently building",
-            projects: (Array.isArray(data) ? data : []).map(toProject),
-        };
-    }
 
-    return data;
-}
-
-/**
- * Return the normal refresh interval configured in runtime data.
- *
- * @returns {number} A positive interval in milliseconds.
- */
 function getRefreshIntervalMs() {
+    /*
+    Return the normal refresh interval configured in runtime data.
+    Returns the default interval when the configured value is invalid.
+    */
     const runtime = site.get("runtime") ?? {};
     const interval = Number(runtime["refresh-interval"]);
 
@@ -68,33 +60,40 @@ function getRefreshIntervalMs() {
         : DEFAULT_REFRESH_INTERVAL_MS;
 }
 
-/**
- * Determine the next retry delay from a completed fetch batch. Failures shorten
- * the delay proportionally, down to 30 seconds when every route failed.
- *
- * @param {boolean[]} results One result per configured route.
- * @returns {number} The delay before the next batch, in milliseconds.
- */
-function getNextRefreshDelay(results = []) {
-    const normalInterval = getRefreshIntervalMs();
-    if (!results.length) return normalInterval;
 
-    const failureRatio = results.filter((result) => !result).length / results.length;
-    if (!failureRatio) return normalInterval;
+function formatRouteData(key, data) {
+    /*
+    Convert route payloads to the shape consumed by their site-store key.
+    `github/activerepo` returns repository records, while the Currently section
+    displays a labelled object containing normalized projects.
+    */
+    const formater = FORMATTERS[key];
 
-    return Math.max(
-        MIN_RETRY_INTERVAL_MS,
-        Math.round(normalInterval * (1 - (0.9 * failureRatio)))
-    );
+    if (typeof formater !== "function") {
+        return data;
+    }
+
+    return formater(data);
 }
 
-/**
- * Mirror a cache payload to a cookie as a fallback when localStorage is not
- * available on a later visit.
- *
- * @param {object} payload The serializable cache payload.
- */
-function writeCacheCookie(payload) {
+
+function saveCachedData(entries = []) {
+    /*
+    Save the payload to localStorage and the cookie.
+    localStorage is the primary cache, while the cookie provides a
+    fallback when localStorage is unavailable.
+    */
+    const payload = {
+        savedAt: new Date().toISOString(),
+        entries,
+    };
+
+    try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
+    } catch {
+        console.warn("Unable to save cache in localStorage.");
+    }
+
     try {
         const secure = location.protocol === "https:" ? "; Secure" : "";
         const cookieName = encodeURIComponent(CACHE_COOKIE_KEY);
@@ -103,127 +102,84 @@ function writeCacheCookie(payload) {
         document.cookie =
             `${cookieName}=${cookieValue}; ` +
             `Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
+
     } catch {
-        // Cookie storage can be unavailable or the payload can be too large.
+        console.warn("Unable to save cache in cookie.");
     }
 }
 
-/**
- * Persist successfully fetched records to localStorage and a cookie fallback.
- *
- * @param {{ key: string, value: object }[]} entries Records to restore later.
- */
-function saveCachedData(entries = []) {
-    const payload = { savedAt: new Date().toISOString(), entries };
 
-    try {
-        localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
-    } catch {
-        // Fresh in-memory data remains usable when storage is unavailable.
-    }
-
-    writeCacheCookie(payload);
-}
-
-/**
- * Parse and validate a serialized cache payload.
- *
- * @param {string|null|undefined} source A value read from browser storage.
- * @returns {{ savedAt: string, entries: object[] }|null} A valid payload or null.
- */
-function parseCachedPayload(source) {
-    try {
-        const payload = JSON.parse(source ?? "null");
-        return Array.isArray(payload?.entries) ? payload : null;
-    } catch {
-        return null;
-    }
-}
-
-/**
- * Convert a cache timestamp to a safely comparable value.
- *
- * @param {object} payload A parsed cache payload.
- * @returns {number} Milliseconds since epoch, or zero for an invalid date.
- */
-function cacheSavedAt(payload) {
-    const savedAt = Date.parse(payload?.savedAt);
-    return Number.isFinite(savedAt) ? savedAt : 0;
-}
-
-/**
- * Restore the newest valid cache snapshot into the reactive site store.
- * Restored records retain their data but are marked `old` until refreshed.
- *
- * @returns {boolean} True only when a `currently` record was restored.
- */
 function load_cached_data() {
-    const candidates = [
+    /*
+    Restore the site data cache snapshot from localStorage or cookies.
+    If no valid cache is found, fresh data will be loaded instead.
+    Return true when cached data is restored, otherwise return false.
+    */
+    const parseCachedData = (source) => {
+        try {
+            const payload = JSON.parse(source ?? "null");
+            return Array.isArray(payload?.entries) ? payload : null;
+        } catch {
+            return null;
+        }
+    };
+
+    const cacheSavedAt = (payload) => {
+        const savedAt = Date.parse(payload?.savedAt);
+        return Number.isFinite(savedAt) ? savedAt : 0;
+    };
+
+    // Collect valid cached data and use the latest snapshot.
+    const cachedPayloads = [
         () => localStorage.getItem(CACHE_KEY),
         () => getCookie(CACHE_COOKIE_KEY),
     ]
-        .map((readSource) => {
+        .map((callable) => {
             try {
-                return parseCachedPayload(readSource());
+                return parseCachedData(callable());
             } catch {
+                console.warn("Unable to read cache.");
                 return null;
             }
         })
         .filter(Boolean)
-        .sort((left, right) => cacheSavedAt(right) - cacheSavedAt(left));
+        .sort((a, b) => cacheSavedAt(b) - cacheSavedAt(a));
 
-    const cachedValue = candidates[0];
-    if (!cachedValue) return false;
+    const cachedData = cachedPayloads[0];
+    if (!cachedData) return false;
 
-    const restoredKeys = new Set();
-    for (const { key, value } of cachedValue.entries) {
+    // Restore the cached data.
+    for (const { key, value } of cachedData.entries) {
         if (!key || !value || typeof value !== "object" || Array.isArray(value)) {
             continue;
         }
 
         site.put(key, {
-            ...value,
+            data: formatRouteData(key, value),
             "site-load-status": "ready",
             "site-data-status": "old",
         });
-        restoredKeys.add(key);
     }
 
-    return restoredKeys.has("currently");
+    return true;
 }
 
-/**
- * Schedule the next complete route fetch after the current batch finishes.
- *
- * @param {object} options Scheduling inputs.
- * @param {Function} options.request Authenticated request function.
- * @param {boolean[]} options.results Results from the completed batch.
- */
-function scheduleNextRefresh({ request, results }) {
-    if (!isServiceActive) return;
-    if (refreshTimer) clearTimeout(refreshTimer);
 
-    refreshTimer = setTimeout(() => {
-        refreshTimer = null;
-        if (isServiceActive) startService({ request });
-    }, getNextRefreshDelay(results));
-}
-
-/**
- * Fetch one configured route, update its site-store record, and stage a
- * successful record for persistence.
- *
- * @param {object} options Fetch configuration.
- * @param {Function} options.request Authenticated request function.
- * @param {string} options.saveAt Site-store key for the route data.
- * @param {string} options.fetchPath API path from `runtime.site-config`.
- * @returns {Promise<boolean>} Whether this route produced fresh data.
- */
 async function fetchAndUpdateData({ request, saveAt, fetchPath }) {
+    /*
+    Fetch and update the site data for a route.
+    On success, store the new data and add it to the fetched data list.
+    On failure, preserve existing data when available and mark the data
+    status as an error. Return true when data is fetched successfully,
+    otherwise return false.
+    */
     const path = `/${fetchPath.replace(/^\/+/, "")}`;
 
     try {
-        const data = formatRouteData(saveAt, unwrap(await request(path)));
+        const data = formatRouteData(
+            saveAt, 
+            unwrap(await request(path))
+        );
         const value = {
             "site-load-status": "ready",
             "site-data-status": "new",
@@ -233,6 +189,7 @@ async function fetchAndUpdateData({ request, saveAt, fetchPath }) {
         site.put(saveAt, value);
         fetchedData.push({ key: saveAt, value });
         return true;
+
     } catch {
         const current = site.get(saveAt);
         site.put(saveAt, {
@@ -246,14 +203,32 @@ async function fetchAndUpdateData({ request, saveAt, fetchPath }) {
     }
 }
 
-/**
- * Build a complete cache snapshot from usable records after a fetch batch.
- * This preserves data from routes that failed this time but still have a
- * previously cached value.
- *
- * @param {[string, string][]} configuredRoutes Valid site-store route entries.
- * @returns {{ key: string, value: object }[]} Records safe to persist.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+function scheduleNextRefresh({ request, results }) {
+    if (!isServiceActive) return;
+    if (refreshTimer) clearTimeout(refreshTimer);
+
+    refreshTimer = setTimeout(() => {
+        refreshTimer = null;
+        if (isServiceActive) startService({ request });
+    }, getNextRefreshDelay(results));
+}
+
+
+
+
+
 function cacheUsableRouteData(configuredRoutes) {
     return configuredRoutes.flatMap(([key]) => {
         const value = site.get(key);
