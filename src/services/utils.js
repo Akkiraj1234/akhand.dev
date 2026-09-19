@@ -1,3 +1,6 @@
+const REFRESH_BUFFER_SECONDS = 60;
+
+
 function getCookie(name) {
     /*
     Return the decoded value of a cookie by name.
@@ -43,9 +46,15 @@ function tokenIsUsable(token) {
 }
 
 function toLanguages(languages = []) {
-    const total = languages.reduce((sum, language) => sum + (Number(language?.size) || 0), 0);
+    const validLanguages = Array.isArray(languages)
+        ? languages.filter((language) => typeof language?.name === "string" && language.name)
+        : [];
+    const total = validLanguages.reduce(
+        (sum, language) => sum + (Number(language.size) || 0),
+        0
+    );
 
-    return Object.fromEntries(languages.map((language) => [
+    return Object.fromEntries(validLanguages.map((language) => [
         language.name,
         total ? Math.round((Number(language.size) / total) * 100) : 0,
     ]));
@@ -67,4 +76,58 @@ function toProject(repository) {
     };
 }
 
-export { getCookie, tokenIsUsable, toProject }
+function currently_formater(repositories) {
+    /*
+    `/github/activerepo` returns repository records with contribution totals.
+    The Currently section expects a label and an array of display-ready
+    projects, so keep that presentation shape at the service boundary.
+    */
+    return {
+        label: "Currently building",
+        projects: (Array.isArray(repositories) ? repositories : []).map(toProject),
+    };
+}
+
+function featureRepo_formater(repositories) {
+    /*
+    `/database/github.pinnedrepo` returns the pinned repository records from
+    the GitHub worker. They use the same repository fields as active projects,
+    but have no contribution totals; `toProject()` safely supplies zeroes.
+    */
+    return {
+        label: "Featured projects",
+        projects: (Array.isArray(repositories) ? repositories : []).map(toProject),
+    };
+}
+
+function heatmap_formater(payload) {
+    /*
+    `/gernal/heatmap` returns the latest normalized year for each provider as
+    `{ year, data: { years: { [year]: heatmapSummary } } }`. Flatten the
+    unnecessary `data` wrapper while retaining the provider and year, so a
+    section can read `heatmap.github.years[heatmap.github.year]` consistently.
+    */
+    const providers = ["github", "leetcode", "roadmap"];
+
+    return Object.fromEntries(providers.map((provider) => {
+        const record = payload?.[provider];
+        const year = typeof record?.year === "string" ? record.year : null;
+        const years = record?.data?.years;
+
+        return [provider, {
+            year,
+            years: years && typeof years === "object" && !Array.isArray(years)
+                ? years
+                : {},
+        }];
+    }));
+}
+
+export {
+    currently_formater,
+    featureRepo_formater,
+    getCookie,
+    heatmap_formater,
+    tokenIsUsable,
+    toProject,
+};

@@ -10,6 +10,7 @@ import site from "@/data/site";
 const CACHE_KEY = "akhand.dev:runtime-data";
 const CACHE_COOKIE_KEY = "akhand.dev_runtime_data";
 const DEFAULT_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+const FAILED_TASK_RETRY_DELAY_MS = 1000;
 
 const FORMATTERS = {
     currently: currently_formater,
@@ -23,6 +24,13 @@ let isServiceActive = false;
 let fetchedData = [];
 
 
+
+function wait(ms) {
+    /*
+    wait for given ms 
+    */
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function unwrap(response) {
     /*
@@ -109,6 +117,9 @@ function saveCachedData(entries = []) {
 }
 
 
+// TODO: make parseCachedData, cacheSavedAt or maybe cachedPayloads 
+// a combined seprate method name _get_cached_data so it can be used 
+// with cacheUsableRouteData 
 function load_cached_data() {
     /*
     Restore the site data cache snapshot from localStorage or cookies.
@@ -155,7 +166,10 @@ function load_cached_data() {
         }
 
         site.put(key, {
-            data: formatRouteData(key, value),
+            // Cache entries are saved after formatting, so do not format them
+            // again when restoring. A second pass would treat the record
+            // wrapper as a route payload and discard the cached projects.
+            data: value.data,
             "site-load-status": "ready",
             "site-data-status": "old",
         });
@@ -204,32 +218,53 @@ async function fetchAndUpdateData({ request, saveAt, fetchPath }) {
 }
 
 
+async function retryFailedTasks({ failedTasks, request }) {
+    /*
+    Retry only the routes that failed in the current batch, once, after a
+    short pause. `request()` already handles an expired JWT by refreshing it
+    and retrying a 401, so this retry is for temporary network or API errors.
+    Keeping it to one attempt prevents a broken endpoint from creating a
+    tight request loop; the normal refresh scheduler handles later attempts.
+    */
+    if (!failedTasks.length) return [];
+
+    await wait(FAILED_TASK_RETRY_DELAY_MS);
+
+    return Promise.all(
+        failedTasks.map(({ key, fetchPath }) =>
+            fetchAndUpdateData({
+                request,
+                saveAt: key,
+                fetchPath,
+            }).then((result) => ({ key, fetchPath, result }))
+        )
+    );
+}
 
 
-
-
-
-
-
-
-
-
-
-function scheduleNextRefresh({ request, results }) {
+function scheduleNextRefresh({ request }) {
+    /*
+    Schedule the next runtime-data refresh using the configured interval.
+    Any existing timer is cleared before scheduling a new one so multiple
+    refresh cycles cannot run concurrently.
+    */
     if (!isServiceActive) return;
     if (refreshTimer) clearTimeout(refreshTimer);
 
     refreshTimer = setTimeout(() => {
         refreshTimer = null;
         if (isServiceActive) startService({ request });
-    }, getNextRefreshDelay(results));
+    }, getRefreshIntervalMs());
 }
 
 
-
-
-
+// TODO: make it compare old cache data to new and save only changes
 function cacheUsableRouteData(configuredRoutes) {
+    /*
+    Collect route data that is currently available and ready to be cached.
+    Only entries whose site-store value has a `ready` load status are included.
+    Returns entries in the `{ key, value }` shape expected by the cache layer.
+    */
     return configuredRoutes.flatMap(([key]) => {
         const value = site.get(key);
 
@@ -239,60 +274,54 @@ function cacheUsableRouteData(configuredRoutes) {
     });
 }
 
-/**
- * Fetch every valid route in `runtime.site-config` concurrently. Successful
- * records are saved as one cache snapshot before the next batch is scheduled.
- * Authentication and HTTP validation belong to the supplied request function.
- *
- * @param {object} options Service configuration.
- * @param {Function} options.request Authenticated request function.
- * @returns {Promise<boolean>} True when at least one route fetched successfully.
- */
+
 async function startService({ request }) {
+    /*
+    Fetch every valid route in `runtime.site-config` concurrently. Successful
+    records are saved as one cache snapshot before the next batch is scheduled.
+    Authentication and HTTP validation belong to the supplied request function.
+    */
     isServiceActive = true;
-    fetchedData = [];
 
     const runtime = site.get("runtime") ?? {};
     const routes = runtime["site-config"] ?? {};
-    const configuredRoutes = Object.entries(routes)
-        .filter(([, value]) => typeof value === "string" && value.trim());
-
-    for (const [key] of configuredRoutes) {
-        const current = site.get(key);
-
-        if (current?.["site-load-status"] !== "ready") {
-            site.put(key, {
-                ...current,
-                "site-load-status": current?.data != null ? "ready" : "loading",
-                "site-data-status": "old",
-                data: current?.data ?? null,
-            });
-        }
-    }
 
     const results = await Promise.all(
-        configuredRoutes
-            .map(([key, value]) => fetchAndUpdateData({
-                request,
-                saveAt: key,
+        Object.entries(routes)
+            .filter(([, value]) => typeof value === "string" && value.trim())
+            .map(async ([key, value]) => ({
+                key,
                 fetchPath: value,
+                result: await fetchAndUpdateData({
+                    request,
+                    saveAt: key,
+                    fetchPath: value,
+                }),
             }))
     );
 
-    const cacheEntries = cacheUsableRouteData(configuredRoutes);
-    if (cacheEntries.length) {
-        saveCachedData(cacheEntries);
+    const failed = results.filter(({ result }) => !result);
+
+    const retryResults = await retryFailedTasks({
+        failedTasks: failed,
+        request,
+    });
+    const completedResults = [...results, ...retryResults];
+
+    if (fetchedData.length) {
+        saveCachedData(fetchedData);
         fetchedData = [];
     }
 
-    scheduleNextRefresh({ request, results });
-    return results.some(Boolean);
+    scheduleNextRefresh({ request });
+    return completedResults.some(({ result }) => result);
 }
 
-/**
- * Stop automatic refreshes and persist only data that has not yet been saved.
- */
+
 function stopService() {
+    /*
+    Stop automatic refreshes and persist only data that has not yet been saved.
+    */
     isServiceActive = false;
 
     if (fetchedData.length) {
@@ -306,4 +335,10 @@ function stopService() {
     }
 }
 
-export { load_cached_data, saveCachedData, startService, stopService };
+
+export { 
+    load_cached_data, 
+    saveCachedData,
+    startService, 
+    stopService 
+};
