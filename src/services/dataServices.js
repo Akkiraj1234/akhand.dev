@@ -6,7 +6,6 @@ import {
 } from "@/services/utils";
 import site from "@/data/site";
 
-
 const CACHE_KEY = "akhand.dev:runtime-data";
 const CACHE_COOKIE_KEY = "akhand.dev_runtime_data";
 const DEFAULT_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
