@@ -1,10 +1,10 @@
+import site from "@/data/site";
 import {
     currently_formater,
     featureRepo_formater,
     heatmap_formater,
     getCookie,
 } from "@/services/utils";
-import site from "@/data/site";
 
 const CACHE_KEY = "akhand.dev:runtime-data";
 const CACHE_COOKIE_KEY = "akhand.dev_runtime_data";
@@ -201,16 +201,16 @@ async function fetchAndUpdateData({ request, saveAt, fetchPath }) {
 
         site.put(saveAt, value);
         fetchedData.push({ key: saveAt, value });
-        return true;
+        return true;    
 
-    } catch {
+    } catch (error) {
         const current = site.get(saveAt);
+        const hasData = current?.data != null;
+        
         site.put(saveAt, {
-            "site-load-status": current?.["site-load-status"] === "ready"
-                ? "ready"
-                : "error",
+            "site-load-status": hasData ? "ready" : "error",
             "site-data-status": "error",
-            data: current?.data ?? null,
+            data: hasData ? current.data : error,
         });
         return false;
     }

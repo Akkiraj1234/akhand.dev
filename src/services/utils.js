@@ -76,7 +76,7 @@ function toProject(repository) {
     };
 }
 
-function currently_formater(repositories) {
+function currently_formater(data) {
     /*
     `/github/activerepo` returns repository records with contribution totals.
     The Currently section expects a label and an array of display-ready
@@ -84,7 +84,7 @@ function currently_formater(repositories) {
     */
     return {
         label: "Currently building",
-        projects: (Array.isArray(repositories) ? repositories : []).map(toProject),
+        projects: (Array.isArray(data) ? data : []).map(toProject),
     };
 }
 

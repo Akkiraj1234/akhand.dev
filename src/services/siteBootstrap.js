@@ -58,6 +58,21 @@ function responseError(response, body, path) {
 }
 
 
+function requestError(error, path) {
+    /*
+    Create a normalized request error from a failed fetch.
+
+    Uses the original error message when available and attaches the request
+    path to the error for callers that need to inspect the failure.
+    */
+    const requestError = new Error(
+        error?.message ?? `Could not request ${path}.`,
+    );
+
+    requestError.path = path;
+    return requestError;
+}
+
 async function createToken() {
     /*
     Create a new initialization JWT.
@@ -122,7 +137,7 @@ async function getValidToken({ forceRefresh = false } = {}) {
 }
 
 
-async function request(path, { method = "GET", headers = {}, body, query } = {}, retried = false) {
+async function request(path, { method = "GET", headers = {}, body, query } = {}, retried = false ) {
     /*
     Make an authenticated request to the runtime API.
 
@@ -130,8 +145,9 @@ async function request(path, { method = "GET", headers = {}, body, query } = {},
     request bodies, applies query parameters, and parses the API response.
 
     A 401 response causes the token to be refreshed and the request to be
-    retried once. Other unsuccessful responses are converted into normalized
-    errors.
+    retried once. HTTP/API errors are converted into normalized response
+    errors, while failures where no HTTP response is received are converted
+    into normalized request errors.
 
     This function is the request interface exposed to runtime data services;
     callers do not need to manage JWTs or authorization headers themselves.
@@ -145,20 +161,27 @@ async function request(path, { method = "GET", headers = {}, body, query } = {},
         }
     });
 
-    const response = await fetch(url, {
-        method,
-        headers: {
-            ...headers,
-            Authorization: `Bearer ${token}`,
+    let response;
+
+    try {
+        response = await fetch(url, {
+            method,
+            headers: {
+                ...headers,
+                Authorization: `Bearer ${token}`,
+                ...(body != null && {
+                    "Content-Type": "application/json",
+                }),
+            },
             ...(body != null && {
-                "Content-Type": "application/json",
+                body: JSON.stringify(body),
             }),
-        },
-        ...(body != null && {
-            body: JSON.stringify(body),
-        }),
-    });
-    
+        });
+
+    } catch (error) {
+        throw requestError(error, path);
+    }
+
     const data = await response.json().catch(() => null);
 
     // Retry once after refreshing the token.
