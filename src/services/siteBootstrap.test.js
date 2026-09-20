@@ -128,6 +128,10 @@ describe("request", () => {
     });
 
     it("refreshes the token once after a 401 and retries the request", async () => {
+        let token = "cached-token";
+
+        getCookie.mockImplementation(() => token);
+
         const fetch = vi.fn()
             .mockResolvedValueOnce(
                 response(
@@ -138,12 +142,14 @@ describe("request", () => {
                     401,
                 ),
             )
-            .mockResolvedValueOnce(
-                response({
+            .mockImplementationOnce(async () => {
+                token = "refreshed-token";
+
+                return response({
                     ok: true,
                     token: "refreshed-token",
-                }),
-            )
+                });
+            })
             .mockResolvedValueOnce(
                 response({
                     ok: true,
@@ -166,13 +172,11 @@ describe("request", () => {
 
         expect(fetch).toHaveBeenCalledTimes(3);
 
-        expect(
-            fetch.mock.calls[0][1].headers.Authorization,
-        ).toBe("Bearer cached-token");
+        expect(fetch.mock.calls[0][1].headers.Authorization)
+            .toBe("Bearer cached-token");
 
-        expect(
-            fetch.mock.calls[2][1].headers.Authorization,
-        ).toBe("Bearer refreshed-token");
+        expect(fetch.mock.calls[2][1].headers.Authorization)
+            .toBe("Bearer refreshed-token");
     });
 
     it("normalizes HTTP errors with the server message and status", async () => {
@@ -262,6 +266,7 @@ describe("bootstrap", () => {
         const second = bootstrap();
 
         expect(first).toBe(second);
+        await Promise.resolve();
         expect(startService).toHaveBeenCalledTimes(1);
 
         resolveStart(true);

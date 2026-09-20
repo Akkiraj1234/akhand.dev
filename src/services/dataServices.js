@@ -205,7 +205,9 @@ async function fetchAndUpdateData({ request, saveAt, fetchPath }) {
 
     } catch (error) {
         const current = site.get(saveAt);
-        const hasData = current?.data != null;
+        const hasData = 
+            current?.["site-load-status"] === "ready" &&
+            current?.data != null;
         
         site.put(saveAt, {
             "site-load-status": hasData ? "ready" : "error",

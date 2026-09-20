@@ -109,13 +109,15 @@ describe("data service", () => {
             "site-load-status": "ready",
             "site-data-status": "old",
             data: cached,
-        });
+        }); 
 
         const request = vi.fn().mockRejectedValue(
             new Error("Network failed"),
         );
 
-        await expect(startService({ request })).resolves.toBe(false);
+        const promise = startService({ request });
+        await vi.advanceTimersByTimeAsync(1000);
+        await expect(promise).resolves.toBe(false);
 
         expect(siteMock.get("currently")).toMatchObject({
             "site-load-status": "ready",
@@ -132,9 +134,20 @@ describe("data service", () => {
         const error = new Error("CORS request failed");
         const request = vi.fn().mockRejectedValue(error);
 
-        await expect(startService({ request })).resolves.toBe(false);
+        // This test specifically verifies the initial-failure path.
+        // There must be no existing data for this route.
+        expect(siteMock.get("heatmap")).toBeUndefined();
+
+        const promise = startService({ request });
+
+        // startService retries failed routes after the retry delay.
+        await vi.advanceTimersByTimeAsync(1000);
+
+        await expect(promise).resolves.toBe(false);
 
         const value = siteMock.get("heatmap");
+
+        expect(value).toBeDefined();
 
         expect(value["site-load-status"]).toBe("error");
         expect(value["site-data-status"]).toBe("error");
