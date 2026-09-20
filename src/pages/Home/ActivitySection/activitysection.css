@@ -3,7 +3,47 @@
    ───────────────────────────────────────────── */
 
 .activity-section {
+    display: block;
     width: 100%;
+    min-height: 0;
+
+    /*
+       Heatmap palette, scoped to this section.
+       Uses the site's moss accent instead of introducing a new color family.
+    */
+    --heatmap-accent: #91a6b8;
+    --heatmap-accent-soft: color-mix(
+        in srgb,
+        var(--heatmap-accent) 14%,
+        var(--surface)
+    );
+
+    --heatmap-level-0: #202328;
+    --heatmap-level-1: #30383f;
+    --heatmap-level-2: #46545f;
+    --heatmap-level-3: #5e707e;
+    --heatmap-level-4: #7890a1;
+    --heatmap-level-5: #91a6b8;
+}
+
+.activity-section > .section-heading {
+    margin-bottom: 20px;
+}
+
+:root[data-theme="light"] .activity-section {
+    --heatmap-accent: #60788a;
+    --heatmap-accent-soft: color-mix(
+        in srgb,
+        var(--heatmap-accent) 10%,
+        var(--surface)
+    );
+
+    --heatmap-level-0: #e8e9e8;
+    --heatmap-level-1: #d8dde0;
+    --heatmap-level-2: #c1cbd0;
+    --heatmap-level-3: #a6b4bc;
+    --heatmap-level-4: #8397a3;
+    --heatmap-level-5: #60788a;
 }
 
 
@@ -21,6 +61,8 @@
     border: 1px solid var(--line);
     border-radius: 10px;
     background: var(--line);
+
+    box-shadow: 0 1px 0 0 color-mix(in srgb, var(--ink) 3%, transparent);
 }
 
 
@@ -126,13 +168,17 @@
 }
 
 .activity-source.active {
-    border-color: var(--line);
-    background: var(--soft);
-    color: var(--ink);
+    border-color: color-mix(
+        in srgb,
+        var(--heatmap-accent) 55%,
+        var(--line)
+    );
+    background: var(--heatmap-accent-soft);
+    color: var(--heatmap-accent);
 }
 
 .activity-source:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--heatmap-accent);
     outline-offset: 2px;
 }
 
@@ -281,11 +327,19 @@
 
 .heatmap-day:hover {
     transform: scale(1.2);
-    border-color: var(--accent);
+    border-color: var(--heatmap-accent);
+}
+
+.heatmap-day[data-level="0"] {
+    border: 1px solid color-mix(
+        in srgb,
+        var(--heatmap-level-0) 55%,
+        var(--line)
+    );
 }
 
 .heatmap-day:focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--heatmap-accent);
     outline-offset: 2px;
 }
 
@@ -296,47 +350,47 @@
 
 
 /* ─────────────────────────────────────────────
+   Placeholder (future) months — shown to fill
+   spare width after the current month, not
+   interactive.
+   ───────────────────────────────────────────── */
+
+.heatmap-month--placeholder {
+    opacity: 0.35;
+}
+
+.heatmap-month--placeholder .heatmap-day {
+    cursor: default;
+    pointer-events: none;
+}
+
+
+/* ─────────────────────────────────────────────
    Activity levels
    ───────────────────────────────────────────── */
 
 .heatmap-day[data-level="0"] {
-    background: var(--paper);
+    background: var(--heatmap-level-0);
 }
 
 .heatmap-day[data-level="1"] {
-    background: color-mix(
-        in srgb,
-        var(--accent) 18%,
-        var(--paper)
-    );
+    background: var(--heatmap-level-1);
 }
 
 .heatmap-day[data-level="2"] {
-    background: color-mix(
-        in srgb,
-        var(--accent) 30%,
-        var(--paper)
-    );
+    background: var(--heatmap-level-2);
 }
 
 .heatmap-day[data-level="3"] {
-    background: color-mix(
-        in srgb,
-        var(--accent) 48%,
-        var(--paper)
-    );
+    background: var(--heatmap-level-3);
 }
 
 .heatmap-day[data-level="4"] {
-    background: color-mix(
-        in srgb,
-        var(--accent) 70%,
-        var(--paper)
-    );
+    background: var(--heatmap-level-4);
 }
 
 .heatmap-day[data-level="5"] {
-    background: var(--accent);
+    background: var(--heatmap-level-5);
 }
 
 
@@ -348,9 +402,9 @@
     position: relative;
     z-index: 2;
 
-    border-color: var(--ink);
+    border-color: var(--heatmap-accent);
     box-shadow: 0 0 0 1px var(--surface);
-    outline: 1px solid var(--ink);
+    outline: 1px solid var(--heatmap-accent);
 }
 
 
@@ -388,43 +442,27 @@
 }
 
 .activity-legend-scale span[data-level="0"] {
-    background: var(--paper);
+    background: var(--heatmap-level-0);
 }
 
 .activity-legend-scale span[data-level="1"] {
-    background: color-mix(
-        in srgb,
-        var(--accent) 18%,
-        var(--paper)
-    );
+    background: var(--heatmap-level-1);
 }
 
 .activity-legend-scale span[data-level="2"] {
-    background: color-mix(
-        in srgb,
-        var(--accent) 30%,
-        var(--paper)
-    );
+    background: var(--heatmap-level-2);
 }
 
 .activity-legend-scale span[data-level="3"] {
-    background: color-mix(
-        in srgb,
-        var(--accent) 48%,
-        var(--paper)
-    );
+    background: var(--heatmap-level-3);
 }
 
 .activity-legend-scale span[data-level="4"] {
-    background: color-mix(
-        in srgb,
-        var(--accent) 70%,
-        var(--paper)
-    );
+    background: var(--heatmap-level-4);
 }
 
 .activity-legend-scale span[data-level="5"] {
-    background: var(--accent);
+    background: var(--heatmap-level-5);
 }
 
 

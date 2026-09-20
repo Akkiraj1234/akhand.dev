@@ -1,6 +1,7 @@
 import {LanguageList, RenderCard} from "@/components/LanguageList";
 import { useEffect, useRef, useState } from "preact/hooks";
 
+import SectionErrorBoundary from "@/components/SectionErrorBoundary";
 import ResourceState from "@/components/ResourceState";
 import Heading from "@/components/Heading";
 import useSite from "@/hooks/useSite";
@@ -191,12 +192,14 @@ function CurrentlySection() {
                 description="Projects I'm working on"
             />
 
-            <ResourceState
-                data={currentlyRecord}
-                render={(data) => (
-                    <CurrentlyContent data={data} />
-                )}
-            />
+            <SectionErrorBoundary name="Activity">
+                <ResourceState
+                    data={currentlyRecord}
+                    render={(data) => (
+                        <CurrentlyContent data={data} />
+                    )}
+                />
+            </SectionErrorBoundary>
         </section>
     );
 }

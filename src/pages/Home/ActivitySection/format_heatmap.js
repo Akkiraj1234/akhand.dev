@@ -1,4 +1,3 @@
-
 function format_heatmap(payload) {
     const providers = ["github", "leetcode", "roadmap"];
 
@@ -47,7 +46,7 @@ function format_heatmap(payload) {
     const currentYear = currentDate.getUTCFullYear();
     const lastMonthIndex =
         Number(year) === currentYear
-            ? Math.max(0, currentDate.getUTCMonth() - 1)
+            ? currentDate.getUTCMonth()
             : 11;
 
     const start = new Date(Date.UTC(Number(year), 0, 1));

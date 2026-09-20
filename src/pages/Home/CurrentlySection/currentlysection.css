@@ -1,5 +1,11 @@
 .current-section {
+    display: block;
+    min-height: 0;
     overflow: hidden;
+}
+
+.current-section > .section-heading {
+    margin-bottom: 20px;
 }
 
 

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 
-import Heading from "@/components/Heading";
+import SectionErrorBoundary from "@/components/SectionErrorBoundary";
 import ResourceState from "@/components/ResourceState";
+import Heading from "@/components/Heading";
 import useSite from "@/hooks/useSite";
 
 import format_heatmap from "./format_heatmap";
@@ -14,6 +15,13 @@ const SOURCE_OPTIONS = [
     { key: "leetcode", label: "LeetCode" },
     { key: "roadmap", label: "Roadmap" },
 ];
+
+// Keep these in sync with the --activity-cell / --activity-gap values
+// and the 16px column gap defined in activitysection.css.
+const MONTH_CELL = 10;
+const MONTH_CELL_GAP = 3;
+const MONTH_WIDTH = 5 * MONTH_CELL + 4 * MONTH_CELL_GAP; // 62
+const MONTH_COLUMN_GAP = 16;
 
 
 function formatDate(timestamp) {
@@ -60,12 +68,49 @@ function getActivityLevel(count, max) {
 }
 
 
+// Builds a blank month (all-zero days) so upcoming months can be
+// previewed after the current month when there's spare width, instead
+// of leaving dead space in the calendar.
+function buildPlaceholderMonth(year, monthIndex) {
+    const monthStart = new Date(Date.UTC(year, monthIndex, 1));
+    const monthEnd = new Date(Date.UTC(year, monthIndex + 1, 0));
+    const label = new Intl.DateTimeFormat("en", {
+        month: "long",
+        timeZone: "UTC",
+    }).format(monthStart);
+
+    const days = [];
+
+    for (
+        const date = new Date(monthStart);
+        date <= monthEnd;
+        date.setUTCDate(date.getUTCDate() + 1)
+    ) {
+        days.push({
+            date: date.getTime(),
+            total: 0,
+            sources: { github: 0, leetcode: 0, roadmap: 0 },
+        });
+    }
+
+    return {
+        year,
+        month: monthIndex + 1,
+        label,
+        leadingEmptyDays: monthStart.getUTCDay(),
+        days,
+        placeholder: true,
+    };
+}
+
+
 function RenderMonth({
     month,
     selectedDay,
     onSelectDay,
     source,
     maxActivity,
+    monthRef,
 }) {
     const cells = Array.from({ length: 35 }, (_, index) => {
         const day = month.days[index];
@@ -83,6 +128,19 @@ function RenderMonth({
         const count = getDayCount(day, source);
         const level = getActivityLevel(count, maxActivity);
         const isSelected = day.date === selectedDay?.date;
+        const label = `${formatDate(day.date)}: ${count} activities`;
+
+        if (month.placeholder) {
+            return (
+                <span
+                    key={day.date}
+                    className="heatmap-day"
+                    data-level="0"
+                    aria-hidden="true"
+                    tabIndex={-1}
+                />
+            );
+        }
 
         return (
             <button
@@ -94,7 +152,8 @@ function RenderMonth({
                         : "heatmap-day"
                 }
                 data-level={level}
-                aria-label={`${formatDate(day.date)}: ${count} activities`}
+                title={label}
+                aria-label={label}
                 aria-pressed={isSelected}
                 onClick={() => onSelectDay(day)}
             />
@@ -102,7 +161,14 @@ function RenderMonth({
     });
 
     return (
-        <div className="heatmap-month">
+        <div
+            ref={monthRef}
+            className={
+                month.placeholder
+                    ? "heatmap-month heatmap-month--placeholder"
+                    : "heatmap-month"
+            }
+        >
             <p className="heatmap-month-label">
                 {month.label}
             </p>
@@ -121,11 +187,12 @@ function Heatmap({
     selectedDay,
     onSelectDay,
     onSelectSource,
-    visibleMonths,
+    renderMonths,
     maxActivity,
     totalContributions,
     totalActiveDays,
     heatmapRef,
+    registerMonthRef,
 }) {
     return (
         <div className="activity-heatmap-main">
@@ -136,13 +203,13 @@ function Heatmap({
                     </p>
 
                     <h3>
-                        {totalContributions} contributions
+                        {totalContributions.toLocaleString()} contributions
                     </h3>
                 </div>
 
                 <div className="activity-heatmap-summary">
                     <span>
-                        {totalActiveDays} active days
+                        {totalActiveDays.toLocaleString()} active days
                     </span>
 
                     <span>
@@ -183,7 +250,7 @@ function Heatmap({
                 className="activity-heatmap"
                 aria-label={`${data.year} activity calendar`}
             >
-                {visibleMonths.map((month) => (
+                {renderMonths.map((month) => (
                     <RenderMonth
                         key={`${month.year}-${month.month}`}
                         month={month}
@@ -191,6 +258,9 @@ function Heatmap({
                         onSelectDay={onSelectDay}
                         source={source}
                         maxActivity={maxActivity}
+                        monthRef={(el) =>
+                            registerMonthRef(month.year, month.month, el)
+                        }
                     />
                 ))}
             </div>
@@ -204,6 +274,7 @@ function Heatmap({
                     <span data-level="2" />
                     <span data-level="3" />
                     <span data-level="4" />
+                    <span data-level="5" />
                 </div>
 
                 <span>More</span>
@@ -273,29 +344,154 @@ function HeatmapInfo({ selectedDay, source }) {
 
 
 function MainContainer({ data }) {
-    const [selectedDay, setSelectedDay] = useState(null);
     const [source, setSource] = useState("all");
+    const [availableWidth, setAvailableWidth] = useState(0);
     const heatmapRef = useRef(null);
+    const monthNodesRef = useRef(new Map());
 
+    const registerMonthRef = (year, month, el) => {
+        const key = `${year}-${month}`;
+
+        if (el) {
+            monthNodesRef.current.set(key, el);
+        } else {
+            monthNodesRef.current.delete(key);
+        }
+    };
+
+    // Real months with data, as produced by format_heatmap (already
+    // includes the current month).
     const visibleMonths = useMemo(() => {
         return Array.isArray(data?.months)
             ? data.months
             : [];
     }, [data?.months]);
 
-    useEffect(() => {
-        if (!heatmapRef.current) {
-            return;
-        }
-
-        heatmapRef.current.scrollLeft = heatmapRef.current.scrollWidth;
-    }, [visibleMonths.length, source]);
-
     const visibleDays = useMemo(() => {
         return visibleMonths.flatMap(
             (month) => month.days ?? [],
         );
     }, [visibleMonths]);
+
+    const today = useMemo(() => {
+        const now = new Date();
+
+        return {
+            timestamp: Date.UTC(
+                now.getUTCFullYear(),
+                now.getUTCMonth(),
+                now.getUTCDate(),
+            ),
+            monthKey: `${now.getUTCFullYear()}-${now.getUTCMonth() + 1}`,
+        };
+    }, []);
+
+    const [selectedDay, setSelectedDay] = useState(null);
+
+    // Default the info panel to today, once today's entry is available.
+    useEffect(() => {
+        if (selectedDay) {
+            return;
+        }
+
+        const todayEntry = visibleDays.find(
+            (day) => day.date === today.timestamp,
+        );
+
+        if (todayEntry) {
+            setSelectedDay(todayEntry);
+        }
+    }, [visibleDays, today, selectedDay]);
+
+    // Measure the visible width of the scroll area so we know how many
+    // month columns actually fit without scrolling.
+    useEffect(() => {
+        const el = heatmapRef.current;
+
+        if (!el || typeof ResizeObserver === "undefined") {
+            return;
+        }
+
+        const observer = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                setAvailableWidth(entry.contentRect.width);
+            }
+        });
+
+        observer.observe(el);
+
+        return () => observer.disconnect();
+    }, []);
+
+    const monthsThatFit = useMemo(() => {
+        if (!availableWidth) {
+            return 0;
+        }
+
+        return Math.max(
+            1,
+            Math.floor(
+                (availableWidth + MONTH_COLUMN_GAP) /
+                    (MONTH_WIDTH + MONTH_COLUMN_GAP),
+            ),
+        );
+    }, [availableWidth]);
+
+    // If there's enough room, pad with blank upcoming months so the
+    // calendar fills the available width instead of hugging the left
+    // edge. If everything doesn't fit, leave it as-is (scrollable) and
+    // don't add placeholders.
+    const renderMonths = useMemo(() => {
+        if (!visibleMonths.length) {
+            return visibleMonths;
+        }
+
+        if (monthsThatFit <= visibleMonths.length) {
+            return visibleMonths;
+        }
+
+        const lastReal = visibleMonths[visibleMonths.length - 1];
+        const maxAvailablePadding = 12 - lastReal.month;
+        const paddingCount = Math.min(
+            monthsThatFit - visibleMonths.length,
+            maxAvailablePadding,
+        );
+
+        if (paddingCount <= 0) {
+            return visibleMonths;
+        }
+
+        const placeholders = Array.from(
+            { length: paddingCount },
+            (_, i) => buildPlaceholderMonth(lastReal.year, lastReal.month + i),
+        );
+
+        return [...visibleMonths, ...placeholders];
+    }, [visibleMonths, monthsThatFit]);
+
+    // On load (and whenever the set of rendered months changes), scroll
+    // so the current month is the first one visible, rather than
+    // whatever month happens to be last in the row.
+    useEffect(() => {
+        const container = heatmapRef.current;
+
+        if (!container) {
+            return;
+        }
+
+        const currentMonthEl = monthNodesRef.current.get(today.monthKey);
+
+        if (currentMonthEl) {
+            const offset =
+                currentMonthEl.getBoundingClientRect().left -
+                container.getBoundingClientRect().left +
+                container.scrollLeft;
+
+            container.scrollLeft = Math.max(0, offset);
+        } else {
+            container.scrollLeft = container.scrollWidth;
+        }
+    }, [renderMonths, today]);
 
     const maxActivity = useMemo(() => {
         return visibleDays.reduce(
@@ -333,11 +529,12 @@ function MainContainer({ data }) {
                 selectedDay={selectedDay}
                 onSelectDay={setSelectedDay}
                 onSelectSource={setSource}
-                visibleMonths={visibleMonths}
+                renderMonths={renderMonths}
                 maxActivity={maxActivity}
                 totalContributions={totalContributions}
                 totalActiveDays={totalActiveDays}
                 heatmapRef={heatmapRef}
+                registerMonthRef={registerMonthRef}
             />
 
             <HeatmapInfo
@@ -353,25 +550,23 @@ function ActivitySection() {
     const data = useSite("heatmap");
 
     return (
-        <section
-            id="activitysection"
-            className="activity-section container"
-        >
+        <section id="activitysection" className="activity-section container" >
             <Heading
                 title={
                     data?.data?.label ?? "Activity"
                 }
                 description="Everything I have been building, learning and contributing to, collected in one place."
             />
-
-            <ResourceState
-                data={data}
-                render={(data) => (
-                    <MainContainer
-                        data={format_heatmap(data)}
-                    />
-                )}
-            />
+            <SectionErrorBoundary name="Current projects">
+                <ResourceState
+                    data={data}
+                    render={(data) => (
+                        <MainContainer
+                            data={format_heatmap(data)}
+                        />
+                    )}
+                />
+            </SectionErrorBoundary>
         </section>
     );
 }
