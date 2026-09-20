@@ -4,15 +4,14 @@
 :root {
     color-scheme: dark;
 
-    /* Deep moss: warm enough for long reading, without the harshness of pure black. */
-    --ink: #f1f5ec;
-    --paper: #10130f;
-    --surface: #171c15;
-    --line: #303a2e;
-    --muted: #a4ada1;
-    --soft: #1a2118;
-    --hover: #252e22;
-    --accent: #b9d985;
+    --ink: #e8ebee;
+    --paper: #0f1113;
+    --surface: #15181b;
+    --line: #2b3035;
+    --muted: #9ba3aa;
+    --soft: #1b1f23;
+    --hover: #24292e;
+    --accent: #8fa6b5;
 
     --header-height: 72px;
 
@@ -31,15 +30,14 @@
 :root[data-theme="light"] {
     color-scheme: light;
 
-    /* A warm canvas plus a clean white surface adds hierarchy without looking grey. */
-    --ink: #172419;
-    --paper: #f4f2eb;
-    --surface: #fffefa;
-    --line: #d7d8cc;
-    --muted: #5d6a5d;
-    --soft: #eaede4;
-    --hover: #dfe6d9;
-    --accent: #3f6b35;
+    --ink: #20262a;
+    --paper: #e9ebe8;
+    --surface: #f4f5f2;
+    --line: #cdd2d1;
+    --muted: #657078;
+    --soft: #e1e4e2;
+    --hover: #d9dedd;
+    --accent: #5f7888;
 }
 
 * {

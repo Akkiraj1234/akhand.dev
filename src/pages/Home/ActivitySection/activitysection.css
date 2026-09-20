@@ -7,11 +7,9 @@
     width: 100%;
     min-height: 0;
 
-    /*
-       Heatmap palette, scoped to this section.
-       Uses the site's moss accent instead of introducing a new color family.
-    */
+    /* Dark theme heatmap */
     --heatmap-accent: #91a6b8;
+
     --heatmap-accent-soft: color-mix(
         in srgb,
         var(--heatmap-accent) 14%,
@@ -30,20 +28,27 @@
     margin-bottom: 20px;
 }
 
+
+/* ─────────────────────────────────────────────
+   Light theme heatmap
+   Muted green contribution scale
+   ───────────────────────────────────────────── */
+
 :root[data-theme="light"] .activity-section {
-    --heatmap-accent: #60788a;
+    --heatmap-accent: #2f6f44;
+
     --heatmap-accent-soft: color-mix(
         in srgb,
         var(--heatmap-accent) 10%,
         var(--surface)
     );
 
-    --heatmap-level-0: #e8e9e8;
-    --heatmap-level-1: #d8dde0;
-    --heatmap-level-2: #c1cbd0;
-    --heatmap-level-3: #a6b4bc;
-    --heatmap-level-4: #8397a3;
-    --heatmap-level-5: #60788a;
+    --heatmap-level-0: #e5e8e6;
+    --heatmap-level-1: #d0e1d4;
+    --heatmap-level-2: #afd0b6;
+    --heatmap-level-3: #8fbd99;
+    --heatmap-level-4: #5f9d70;
+    --heatmap-level-5: #2f6f44;
 }
 
 
@@ -54,15 +59,32 @@
 .activityMainContainer {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 220px;
+
     gap: 1px;
+
     width: 100%;
     overflow: hidden;
 
     border: 1px solid var(--line);
     border-radius: 10px;
-    background: var(--line);
 
-    box-shadow: 0 1px 0 0 color-mix(in srgb, var(--ink) 3%, transparent);
+    /*
+       Separate the activity card from the page
+       without introducing a new hard-coded color.
+    */
+    background: color-mix(
+        in srgb,
+        var(--soft) 48%,
+        transparent
+    );
+
+    box-shadow:
+        0 1px 0 0
+        color-mix(
+            in srgb,
+            var(--ink) 3%,
+            transparent
+        );
 }
 
 
@@ -72,8 +94,19 @@
 
 .activity-heatmap-main {
     min-width: 0;
+
     padding: 22px;
-    background: var(--surface);
+
+    /*
+       Not pure white in light mode.
+       Gives the main panel a softer surface against
+       the page background.
+    */
+    background: color-mix(
+        in srgb,
+        var(--surface) 78%,
+        var(--paper)
+    );
 }
 
 
@@ -85,6 +118,7 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+
     gap: 20px;
     margin-bottom: 18px;
 }
@@ -93,10 +127,12 @@
     margin: 0 0 5px;
 
     color: var(--muted);
+
     font-family: "DM Mono", monospace;
     font-size: 0.62rem;
     line-height: 1.4;
     letter-spacing: 0.08em;
+
     text-transform: uppercase;
 }
 
@@ -104,6 +140,7 @@
     margin: 0;
 
     color: var(--ink);
+
     font-size: 1rem;
     font-weight: 650;
     line-height: 1.4;
@@ -112,16 +149,20 @@
 .activity-heatmap-summary {
     display: flex;
     align-items: center;
+
     gap: 14px;
 
     color: var(--muted);
+
     font-family: "DM Mono", monospace;
     font-size: 0.63rem;
+
     white-space: nowrap;
 }
 
 .activity-heatmap-summary span + span {
     padding-left: 14px;
+
     border-left: 1px solid var(--line);
 }
 
@@ -133,7 +174,9 @@
 .activity-sources {
     display: flex;
     align-items: center;
+
     gap: 4px;
+
     margin-bottom: 22px;
     padding-bottom: 14px;
 
@@ -144,6 +187,7 @@
     appearance: none;
 
     padding: 5px 9px;
+
     border: 1px solid transparent;
     border-radius: 5px;
 
@@ -173,6 +217,7 @@
         var(--heatmap-accent) 55%,
         var(--line)
     );
+
     background: var(--heatmap-accent-soft);
     color: var(--heatmap-accent);
 }
@@ -184,7 +229,7 @@
 
 
 /* ─────────────────────────────────────────────
-   Monthly heatmap
+   Heatmap
    ───────────────────────────────────────────── */
 
 .activity-heatmap {
@@ -289,6 +334,7 @@
     gap: var(--activity-gap);
 
     width: max-content;
+
     height:
         calc(
             (7 * var(--activity-cell)) +
@@ -327,6 +373,7 @@
 
 .heatmap-day:hover {
     transform: scale(1.2);
+
     border-color: var(--heatmap-accent);
 }
 
@@ -350,9 +397,7 @@
 
 
 /* ─────────────────────────────────────────────
-   Placeholder (future) months — shown to fill
-   spare width after the current month, not
-   interactive.
+   Placeholder months
    ───────────────────────────────────────────── */
 
 .heatmap-month--placeholder {
@@ -403,7 +448,10 @@
     z-index: 2;
 
     border-color: var(--heatmap-accent);
-    box-shadow: 0 0 0 1px var(--surface);
+
+    box-shadow:
+        0 0 0 1px var(--surface);
+
     outline: 1px solid var(--heatmap-accent);
 }
 
@@ -416,8 +464,8 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 7px;
 
+    gap: 7px;
     margin-top: 18px;
 
     color: var(--muted);
@@ -429,6 +477,7 @@
 .activity-legend-scale {
     display: flex;
     align-items: center;
+
     gap: 3px;
 }
 
@@ -474,16 +523,24 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    min-width: 0;
-    padding: 22px;
 
-    background: var(--soft);
+    min-width: 0;
+
+    padding: 30px 24px;
+    background: color-mix(
+        in srgb,
+        var(--paper) 45%,
+        transparent
+    );
+
+    border-left: 1px solid var(--line);
 }
 
 .activity-heatmap-info h3 {
     margin: 0 0 8px;
 
     color: var(--ink);
+
     font-size: 0.92rem;
     font-weight: 650;
     line-height: 1.4;
@@ -493,6 +550,7 @@
     margin: 0;
 
     color: var(--muted);
+
     font-size: 0.72rem;
     line-height: 1.65;
 }
@@ -501,6 +559,7 @@
     margin: 0 0 18px;
 
     color: var(--muted);
+
     font-family: "DM Mono", monospace;
     font-size: 0.67rem;
 }
@@ -512,6 +571,7 @@
 
 .activity-info-sources {
     width: 100%;
+
     margin: 4px 0 0;
     padding: 0;
 
@@ -522,6 +582,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     gap: 12px;
 
     padding: 9px 0;
@@ -531,6 +592,7 @@
 
 .activity-info-sources dt {
     color: var(--muted);
+
     font-size: 0.68rem;
 }
 
@@ -538,6 +600,7 @@
     margin: 0;
 
     color: var(--ink);
+
     font-family: "DM Mono", monospace;
     font-size: 0.64rem;
 }
@@ -547,7 +610,6 @@
    Responsive
    ───────────────────────────────────────────── */
 
-
 @media (max-width: 780px) {
     .activityMainContainer {
         grid-template-columns: 1fr;
@@ -556,7 +618,6 @@
     .activity-heatmap-info {
         border-top: 1px solid var(--line);
     }
-
 }
 
 @media (max-width: 560px) {
@@ -589,7 +650,6 @@
     .activity-source {
         flex-shrink: 0;
     }
-
 
     .activity-legend {
         justify-content: flex-start;
