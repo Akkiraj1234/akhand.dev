@@ -3,6 +3,7 @@ import SectionErrorBoundary from "@/components/SectionErrorBoundary";
 
 import Hero from "./Hero/Hero";
 import CurrentlySection from "./CurrentlySection/CurrentlySection";
+import ActivitySection from "./ActivitySection/ActivitySection";
 // import CurrentlySection from "./components/CurrentlySection";
 // import ActivitySection from "./components/ActivitySection";
 // import ProjectsSection from "./components/ProjectsSection";
@@ -20,6 +21,7 @@ function Home() {
                 <Hero /> 
                 <SectionErrorBoundary name="Current projects">
                     <CurrentlySection/>
+                    <ActivitySection/>
                 </SectionErrorBoundary>
             </main>
         </MainLayout>
