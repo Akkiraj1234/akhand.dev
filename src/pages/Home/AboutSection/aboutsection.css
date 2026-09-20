@@ -1,0 +1,22 @@
+.about-section {
+    display: block;
+    min-height: 0;
+}
+
+.about-copy {
+    display: grid;
+    gap: 14px;
+    max-width: 760px;
+}
+
+.about-copy p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.96rem;
+    line-height: 1.75;
+}
+
+.about-copy .about-lead {
+    color: var(--ink);
+    font-size: 1.05rem;
+}
