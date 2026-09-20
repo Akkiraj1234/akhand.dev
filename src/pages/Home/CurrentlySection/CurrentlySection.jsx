@@ -2,6 +2,7 @@ import {LanguageList, RenderCard} from "@/components/LanguageList";
 import { useEffect, useRef, useState } from "preact/hooks";
 import useSite from "@/hooks/useSite";
 import Heading from "@/components/Heading";
+import ResourceState from "@/components/ResourceState";
 import "./currentlysection.css";
 
 
@@ -139,15 +140,16 @@ const CurrentContent = ({ project }) => {
     );
 };
 
-function CurrentlySection() {
-    const currentlyRecord = useSite("currently");
+
+function CurrentlyContent({ data }) {
     const [selectedProject, setSelectedProject] = useState(0);
 
-    const currently = currentlyRecord?.data;
-    const loadStatus = currentlyRecord?.["site-load-status"] ?? "loading";
-    const dataStatus = currentlyRecord?.["site-data-status"];
-    const projects = Array.isArray(currently?.projects) ? currently.projects : [];
-    const project = projects[selectedProject] ?? projects[0];
+    const projects = Array.isArray(data?.projects)
+        ? data.projects
+        : [];
+
+    const project =
+        projects[selectedProject] ?? projects[0];
 
     useEffect(() => {
         if (selectedProject >= projects.length) {
@@ -155,44 +157,44 @@ function CurrentlySection() {
         }
     }, [projects.length, selectedProject]);
 
+    if (!project) {
+        return (
+            <p className="site-data-message">
+                No current projects have been published yet.
+            </p>
+        );
+    }
+
+    return (
+        <div className="current-layout">
+            <CurrentContent project={project} />
+
+            <CurrentProjects
+                data={{ projects }}
+                onClickFunc={setSelectedProject}
+                currIdx={selectedProject}
+            />
+        </div>
+    );
+}
+
+
+function CurrentlySection() {
+    const currentlyRecord = useSite("currently");
+
     return (
         <section id="currently" className="current-section container">
             <Heading
-                title={currently?.label ?? "Currently building"}
+                title={currentlyRecord?.data?.label ?? "Currently building"}
                 description="Projects I'm working on"
             />
 
-            {loadStatus === "error" && (
-                <p className="site-data-message" role="status">
-                    Live projects are temporarily unavailable. The rest of the site is still here.
-                </p>
-            )}
-
-            {loadStatus === "ready" && dataStatus === "error" && (
-                <p className="site-data-message" role="status">
-                    Showing saved project data. Could not check for updates right now.
-                </p>
-            )}
-
-            {loadStatus === "loading" && (
-                <p className="site-data-message" role="status">Loading current projects…</p>
-            )}
-
-            {loadStatus === "ready" && !projects.length && (
-                <p className="site-data-message">No current projects have been published yet.</p>
-            )}
-
-            {project && (
-                <div className="current-layout">
-                    <CurrentContent project={project}/>
-
-                    <CurrentProjects
-                        data={{ projects }}
-                        onClickFunc={setSelectedProject}
-                        currIdx={selectedProject}
-                    />
-                </div>
-            )}
+            <ResourceState
+                data={currentlyRecord}
+                render={(data) => (
+                    <CurrentlyContent data={data} />
+                )}
+            />
         </section>
     );
 }

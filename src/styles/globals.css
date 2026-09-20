@@ -237,3 +237,103 @@ img {
     margin: 48px auto;
     color: var(--muted);
 }
+
+
+/* ResourceState css */
+.resource-state {
+    width: 100%;
+}
+
+.resource-state-message {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    margin: 16px 0;
+
+    color: var(--muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+
+/* Loading */
+
+.resource-state-loading {
+    min-height: 40px;
+}
+
+.resource-state-indicator {
+    width: 7px;
+    height: 7px;
+
+    flex-shrink: 0;
+
+    border: 1px solid var(--line);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+
+    animation: resource-state-spin 800ms linear infinite;
+}
+
+@keyframes resource-state-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* Error */
+
+.resource-state-error {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+
+    margin: 20px 0;
+    padding: 12px 14px;
+
+    border: 1px solid var(--line);
+    border-radius: 7px;
+
+    background: var(--soft);
+}
+
+.resource-state-label {
+    color: var(--ink);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.resource-state-detail {
+    color: var(--muted);
+    font-size: 0.72rem;
+}
+
+
+/* Refresh warning */
+
+.resource-state-warning {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    margin: 12px 0 0;
+
+    color: var(--muted);
+    font-family: "DM Mono", monospace;
+    font-size: 0.65rem;
+    line-height: 1.5;
+}
+
+.resource-state-warning::before {
+    content: "";
+
+    width: 5px;
+    height: 5px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+    background: var(--accent);
+}
