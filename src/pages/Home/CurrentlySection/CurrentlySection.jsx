@@ -1,14 +1,15 @@
 import {LanguageList, RenderCard} from "@/components/LanguageList";
 import { useEffect, useRef, useState } from "preact/hooks";
-import useSite from "@/hooks/useSite";
-import Heading from "@/components/Heading";
+
 import ResourceState from "@/components/ResourceState";
+import Heading from "@/components/Heading";
+import useSite from "@/hooks/useSite";
 import "./currentlysection.css";
 
 
 const CurrentProjects = ({ data, onClickFunc, currIdx }) => {
     const currentProject = data.projects[currIdx];
-
+    
     return (
         <nav
             className="current-projects"
@@ -59,6 +60,7 @@ const CurrentProjects = ({ data, onClickFunc, currIdx }) => {
         </nav>
     );
 };
+
 
 const CurrentContent = ({ project }) => {
     const [expanded, setExpanded] = useState(false);
